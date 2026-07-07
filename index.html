@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>WOY — Menú</title>
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="assets/tokens.css?v=5" />
+  <link rel="stylesheet" href="assets/app.css?v=5" />
+</head>
+<body>
+  <main class="app" id="app">
+    <header class="hd">
+      <div class="hd-top">
+        <span class="mesa is-none" id="mesa"><span class="dot"></span><span id="mesaLabel">Sin mesa</span></span>
+        <div class="brand"><span class="mark" id="brandMark">🔥</span><span id="brandName">WOY</span></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="icon-btn lang" id="langBtn" aria-label="Change language">EN</button>
+          <button class="icon-btn" id="cartTop" aria-label="Ver mi selección">
+            <i class="ti ti-shopping-bag" aria-hidden="true"></i>
+            <span class="badge" id="cartBadgeTop" hidden>0</span>
+          </button>
+        </div>
+      </div>
+      <div class="hello">
+        <h1 id="greeting">¿Qué se te antoja?</h1>
+        <p id="subgreeting">Explora el menú y arma tu selección</p>
+      </div>
+      <label class="search">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input id="q" type="search" placeholder="Buscar platos, bebidas…" aria-label="Buscar en el menú" />
+      </label>
+    </header>
+
+    <section id="promo" aria-label="Promoción"></section>
+    <nav class="cats" id="cats" aria-label="Categorías"></nav>
+
+    <section id="featWrap" aria-label="Destacados">
+      <div class="sec-hd"><h2 id="featTitle">Recomendados</h2></div>
+      <div class="feat" id="feat"></div>
+    </section>
+
+    <div class="sec-hd" id="listHd"><h2 id="listTitle">Todo el menú</h2></div>
+    <section class="list" id="list" aria-label="Platos"></section>
+
+    <footer class="foot"><span id="footLbl">Desarrollado por</span> <b>WOY Projects</b></footer>
+  </main>
+
+  <nav class="nav" aria-label="Navegación">
+    <button data-nav="menu" class="is-active"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i><span id="navMenuLbl">Menú</span></button>
+    <button data-nav="search"><i class="ti ti-search" aria-hidden="true"></i><span id="navSearchLbl">Buscar</span></button>
+    <button data-nav="cart" class="nav-cart"><i class="ti ti-shopping-bag" aria-hidden="true"></i><span id="navCartLbl">Carrito</span><span class="badge" id="cartBadgeNav" hidden>0</span></button>
+    <button data-nav="info"><i class="ti ti-info-circle" aria-hidden="true"></i><span id="navInfoLbl">Info</span></button>
+  </nav>
+
+  <!-- Scrim + sheets -->
+  <div class="scrim" id="scrim"></div>
+
+  <aside class="sheet" id="dishSheet" aria-label="Detalle del plato" aria-modal="true" role="dialog">
+    <span class="grab"></span>
+    <div class="sheet-scroll" id="dishScroll"></div>
+    <div class="sheet-bar" id="dishBar"></div>
+  </aside>
+
+  <aside class="sheet" id="cartSheet" aria-label="Mi selección" aria-modal="true" role="dialog">
+    <span class="grab"></span>
+    <div class="sheet-scroll" id="cartScroll"></div>
+    <div class="sheet-bar" id="cartBar" hidden></div>
+  </aside>
+
+  <aside class="sheet" id="infoSheet" aria-label="Información" aria-modal="true" role="dialog">
+    <span class="grab"></span>
+    <div class="sheet-scroll" id="infoScroll"></div>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="assets/data.js?v=5"></script>
+  <script src="assets/menu.js?v=5"></script>
+</body>
+</html>

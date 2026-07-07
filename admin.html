@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#191512" />
+  <title>WOY — Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="assets/tokens.css?v=5" />
+  <link rel="stylesheet" href="assets/admin.css?v=5" />
+</head>
+<body class="admin">
+  <div class="lock" id="lockScreen" hidden>
+    <div class="lock-card">
+      <span class="lock-logo">🔐</span>
+      <h2 id="lockTitle">Panel administrativo</h2>
+      <p id="lockHint">Ingresa la contraseña para continuar.</p>
+      <input type="password" id="lockPass" placeholder="Contraseña" autocomplete="current-password" />
+      <input type="password" id="lockPass2" placeholder="Confirmar contraseña" hidden />
+      <button class="pill-btn" id="lockBtn" type="button">Entrar</button>
+      <p class="lock-err" id="lockErr" hidden>Contraseña incorrecta</p>
+    </div>
+  </div>
+  <div class="shell">
+    <!-- Sidebar -->
+    <aside class="side">
+      <div class="logo">
+        <span class="mark" id="sideMark">🔥</span>
+        <span>WOY<small>Panel admin</small></span>
+      </div>
+      <nav id="nav">
+        <button data-sec="catalogo" class="is-active"><i class="ti ti-tools-kitchen-2"></i><span class="lbl">Catálogo</span></button>
+        <button data-sec="marca"><i class="ti ti-palette"></i><span class="lbl">Marca</span></button>
+        <button data-sec="marketing"><i class="ti ti-speakerphone"></i><span class="lbl">Marketing</span></button>
+        <button data-sec="mesas"><i class="ti ti-qrcode"></i><span class="lbl">Mesas y QR</span></button>
+      </nav>
+      <div class="side-foot">
+        <a href="index.html" target="_blank" rel="noopener"><i class="ti ti-external-link"></i><span>Ver menú</span></a>
+        <button id="resetBtn"><i class="ti ti-refresh"></i><span>Restablecer datos</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- Catálogo -->
+      <section class="section is-active" id="sec-catalogo">
+        <div class="page-hd">
+          <div><h1>Catálogo</h1><p>Crea y edita platos, categorías y su disponibilidad.</p></div>
+          <button class="pill-btn" id="newDish"><i class="ti ti-plus"></i>Nuevo plato</button>
+        </div>
+        <div class="card">
+          <h3>Categorías</h3>
+          <p class="hint">Toca la ✕ para quitar una categoría. Los platos sin categoría quedan en “otros”.</p>
+          <div class="catchips" id="catChips"></div>
+          <div class="rep" style="margin-top:14px;max-width:360px">
+            <input type="text" id="newCatName" placeholder="Nueva categoría (ej. Sopas)" />
+            <input type="text" id="newCatEmoji" placeholder="🍜" style="width:70px;text-align:center" maxlength="2" />
+            <button class="iconbtn" id="addCat" aria-label="Agregar categoría"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+        <div class="card">
+          <h3 id="dishCount">Platos</h3>
+          <p class="hint">El interruptor controla si el plato aparece disponible en el menú del cliente.</p>
+          <div class="dish-grid" id="dishGrid"></div>
+        </div>
+      </section>
+
+      <!-- Marca -->
+      <section class="section" id="sec-marca">
+        <div class="page-hd"><div><h1>Marca</h1><p>Personaliza el nombre, el color y la tipografía del menú.</p></div></div>
+        <div class="card">
+          <div class="row2">
+            <div class="field"><label>Nombre del restaurante</label><input type="text" id="brandName" /></div>
+            <div class="field"><label>Emoji / logo</label><input type="text" id="brandEmoji" maxlength="2" /></div>
+          </div>
+          <div class="field"><label>Eslogan</label><input type="text" id="brandTagline" /></div>
+          <div class="field">
+            <label>Temas profesionales <span style="color:var(--ink-3);font-weight:400">(un toque aplica ambos colores)</span></label>
+            <div class="theme-pick" id="themePick"></div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Color principal (personalizado)</label>
+              <div class="color-field"><input type="color" id="accent" /></div>
+            </div>
+            <div class="field">
+              <label>Color secundario (personalizado)</label>
+              <div class="color-field"><input type="color" id="accent2" /></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Información para el cliente</h3>
+          <p class="hint">Aparece en la pestaña “Info” del menú: reservas, servicios a domicilio y redes sociales.</p>
+          <div class="row2">
+            <div class="field"><label>Teléfono de reservas 1</label><input type="text" id="infoPhone1" /></div>
+            <div class="field"><label>Teléfono de reservas 2</label><input type="text" id="infoPhone2" /></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Instagram (usuario, sin @)</label><input type="text" id="infoIg" /></div>
+            <div class="field"><label>Facebook (usuario o página)</label><input type="text" id="infoFb" /></div>
+          </div>
+          <div class="field"><label>Servicios especiales / a domicilio</label><textarea id="infoServices"></textarea></div>
+          <div class="field"><label>Servicios en inglés <span style="color:var(--ink-3);font-weight:400">(opcional)</span></label><textarea id="infoServicesEn"></textarea></div>
+        </div>
+      </section>
+
+      <!-- Marketing -->
+      <section class="section" id="sec-marketing">
+        <div class="mk-wrap">
+          <div class="page-hd mk-hd"><div><h1>Marketing</h1><p>Arma el pop-up promocional y míralo tal como lo verá el cliente.</p></div></div>
+          <div class="mk-cols">
+            <div class="card mk-form">
+              <label class="inline-tgl" id="promoToggle">Mostrar pop-up al entrar<span class="tgl" id="promoTgl"></span></label>
+              <div class="field" style="margin-top:15px">
+                <label>Imagen o video</label>
+                <div class="row2">
+                  <button class="pill-btn ghost" id="promoPick" type="button"><i class="ti ti-upload"></i>Subir imagen o video</button>
+                  <button class="add-line" id="promoClear" type="button" hidden><i class="ti ti-trash"></i>Quitar</button>
+                </div>
+                <input type="file" id="promoFile" accept="image/*,video/*" hidden />
+              </div>
+              <div class="row2">
+                <div class="field"><label>Título</label><input type="text" id="promoTitle" /></div>
+                <div class="field"><label>Emoji</label><input type="text" id="promoEmoji" maxlength="2" /></div>
+              </div>
+              <div class="field"><label>Texto</label><textarea id="promoText"></textarea></div>
+            </div>
+            <div class="mk-prev">
+              <div class="mk-phone">
+                <div class="mk-pop" id="promoPreview"></div>
+              </div>
+              <p class="mk-meas">
+                📐 <b>Medidas recomendadas</b><br />
+                Imagen: <b>1080 × 1350 px</b> (proporción 4:5, vertical)<br />
+                Video: <b>1080 × 1350 px</b> ó 9:16 · máx. <b>3 MB</b> (clip corto)<br />
+                Peso ideal de imagen: menos de 1 MB
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mesas y QR -->
+      <section class="section" id="sec-mesas">
+        <div class="page-hd">
+          <div><h1>Mesas y QR</h1><p>Genera un código QR por mesa. Cada uno abre el menú con la mesa ya seleccionada.</p></div>
+          <button class="pill-btn ghost" id="printAll"><i class="ti ti-printer"></i>Imprimir todos</button>
+        </div>
+        <div class="card">
+          <div class="field" style="max-width:520px">
+            <label>Dirección base del menú (donde se publique el app)</label>
+            <input type="text" id="baseUrl" placeholder="https://tudominio.com/index.html" />
+            <p class="hint" style="margin:6px 0 0">El QR codifica esta dirección + <code>?mesa=ID</code>. Ahora mismo apunta a esta demo local.</p>
+          </div>
+          <div class="rep" style="margin-top:8px;max-width:360px">
+            <input type="text" id="newTableLabel" placeholder="Nueva mesa (ej. Terraza 1)" />
+            <button class="iconbtn" id="addTable" aria-label="Agregar mesa"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+        <div class="qr-grid" id="qrGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal editor de plato -->
+  <div class="modal-scrim" id="dishModal">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3 id="dishModalTitle">Nuevo plato</h3>
+        <button class="iconbtn" id="dishModalClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="field">
+        <label>Fotos y videos del plato</label>
+        <div class="thumb-pick">
+          <div class="prev" id="dishPrev">🍽️</div>
+          <div style="flex:1">
+            <div class="row2">
+              <button class="pill-btn ghost" id="pickImg" type="button"><i class="ti ti-upload"></i>Añadir fotos o videos</button>
+              <input type="text" id="dishEmoji" placeholder="Emoji 🍔" maxlength="2" style="text-align:center" />
+            </div>
+            <input type="file" id="imgFile" accept="image/*,video/*" multiple hidden />
+            <p class="hint">La primera foto es la portada del plato. Hasta 6 elementos; videos cortos (máx. 3 MB c/u).</p>
+          </div>
+        </div>
+        <div class="media-list" id="mediaList"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Nombre</label><input type="text" id="dishName" /></div>
+        <div class="field"><label>Categoría</label><select id="dishCat"></select></div>
+      </div>
+      <div class="field"><label>Descripción</label><textarea id="dishDesc"></textarea></div>
+      <div class="field"><label>Nombre en inglés <span style="color:var(--ink-3);font-weight:400">(para el menú EN)</span></label><input type="text" id="dishNameEn" /></div>
+      <div class="field"><label>Descripción en inglés <span style="color:var(--ink-3);font-weight:400">(opcional)</span></label><textarea id="dishDescEn"></textarea></div>
+      <div class="row3">
+        <div class="field"><label>Precio base ($)</label><input type="number" id="dishPrice" step="0.5" min="0" /></div>
+        <div class="field"><label>Kcal</label><input type="number" id="dishKcal" min="0" /></div>
+        <div class="field"><label>Tiempo (min)</label><input type="number" id="dishTime" min="0" /></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>Proteínas (g)</label><input type="number" id="dishProt" min="0" /></div>
+        <div class="field"><label>Carbohidratos (g)</label><input type="number" id="dishCarb" min="0" /></div>
+        <div class="field"><label>Grasas (g)</label><input type="number" id="dishFat" min="0" /></div>
+      </div>
+      <div class="field">
+        <label>Etiquetas <span style="color:var(--ink-3);font-weight:400">(se muestran sobre la foto)</span></label>
+        <div class="tag-pick" id="tagPick"></div>
+      </div>
+      <div class="field">
+        <label>Tamaños <span style="color:var(--ink-3);font-weight:400">(variable: precio + extra)</span></label>
+        <div id="sizesRep"></div>
+        <button class="add-line" id="addSize" type="button"><i class="ti ti-plus"></i>Agregar tamaño</button>
+      </div>
+      <div class="field">
+        <label>Ingredientes <span style="color:var(--ink-3);font-weight:400">(el cliente puede quitarlos)</span></label>
+        <div id="ingsRep"></div>
+        <button class="add-line" id="addIng" type="button"><i class="ti ti-plus"></i>Agregar ingrediente</button>
+      </div>
+      <div class="field">
+        <label>Extras / modificadores</label>
+        <div id="modsRep"></div>
+        <button class="add-line" id="addMod" type="button"><i class="ti ti-plus"></i>Agregar extra</button>
+      </div>
+      <div class="row2">
+        <label class="inline-tgl" id="featToggle">Destacado (Recomendados)<span class="tgl" id="featTgl"></span></label>
+        <label class="inline-tgl" id="availToggle">Disponible<span class="tgl on" id="availTgl"></span></label>
+      </div>
+      <div class="modal-foot">
+        <button class="pill-btn ghost" id="dishCancel">Cancelar</button>
+        <button class="pill-btn" id="dishSave"><i class="ti ti-check"></i>Guardar plato</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="atoast" id="atoast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+  <script src="assets/data.js?v=5"></script>
+  <script src="assets/admin.js?v=5"></script>
+</body>
+</html>
