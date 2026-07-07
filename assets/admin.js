@@ -562,13 +562,18 @@
   }
 
   /* ---------- Mesas y QR ---------- */
+  function menuUrl() {
+    var tid = window.WOY.tenantId();
+    var u = location.origin + location.pathname.replace(/admin\.html$/, "") + "index.html";
+    return tid ? u + "?c=" + tid : u;
+  }
   function baseUrl() {
     var v = $("baseUrl").value.trim();
-    return v || (location.origin + location.pathname.replace(/admin\.html$/, "") + "index.html");
+    return v || menuUrl();
   }
   function initTables() {
     data.tables = data.tables || [];
-    $("baseUrl").value = location.origin + location.pathname.replace(/admin\.html$/, "") + "index.html";
+    $("baseUrl").value = menuUrl();
     $("baseUrl").addEventListener("input", renderQR);
     $("addTable").addEventListener("click", function () {
       var label = $("newTableLabel").value.trim();
@@ -682,8 +687,9 @@
   }
   function initLock(done) {
     var sec = data.security || (data.security = {});
+    var lockKey = "woy_admin_ok__" + (window.WOY.tenantId() || "default");
     var ok = false;
-    try { ok = sessionStorage.getItem("woy_admin_ok") === "1"; } catch (e) {}
+    try { ok = sessionStorage.getItem(lockKey) === "1"; } catch (e) {}
     if (ok) { done(); return; }
     var creating = !sec.passHash;
     $("lockScreen").hidden = false;
@@ -695,7 +701,7 @@
     $("lockBtn").textContent = creating ? "Guardar y entrar" : "Entrar";
 
     function unlock() {
-      try { sessionStorage.setItem("woy_admin_ok", "1"); } catch (e) {}
+      try { sessionStorage.setItem(lockKey, "1"); } catch (e) {}
       $("lockScreen").hidden = true;
       done();
     }
@@ -724,6 +730,8 @@
   function boot() {
     applyTheme();
     initLock(function () {});
+    var vm = document.querySelector(".side-foot a");
+    if (vm) vm.setAttribute("href", menuUrl());
     initNav();
     initDishModal();
     initReset();

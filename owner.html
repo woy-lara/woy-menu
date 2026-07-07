@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#191512" />
+  <title>WOY Projects — Panel de control</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="assets/tokens.css?v=8" />
+  <link rel="stylesheet" href="assets/admin.css?v=8" />
+  <link rel="stylesheet" href="assets/owner.css?v=8" />
+</head>
+<body class="owner">
+  <!-- Candado del dueño -->
+  <div class="lock" id="ownerLock" hidden>
+    <div class="lock-card">
+      <span class="lock-logo">🛠️</span>
+      <h2>WOY Projects</h2>
+      <p>Panel de control del dueño. Ingresa tus credenciales.</p>
+      <input type="text" id="ownUser" placeholder="Usuario" autocomplete="username" />
+      <input type="password" id="ownPass" placeholder="Contraseña" autocomplete="current-password" />
+      <button class="pill-btn" id="ownBtn" type="button">Entrar</button>
+      <p class="lock-err" id="ownErr" hidden>Usuario o contraseña incorrectos</p>
+    </div>
+  </div>
+
+  <!-- Panel -->
+  <div class="owner-shell" id="ownerShell" hidden>
+    <header class="owner-top">
+      <div class="owner-brand">
+        <span class="ob-mark">🛠️</span>
+        <div><b>WOY Projects</b><small>Panel de control</small></div>
+      </div>
+      <div class="owner-actions">
+        <button class="pill-btn" id="newClient"><i class="ti ti-plus"></i>Nuevo cliente</button>
+        <button class="iconbtn" id="ownLogout" aria-label="Cerrar sesión" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
+      </div>
+    </header>
+
+    <main class="owner-main">
+      <div class="owner-hd">
+        <div><h1>Mis clientes</h1><p id="clientCount">Restaurantes que gestionas con WOY.</p></div>
+      </div>
+      <div class="client-grid" id="clientGrid"></div>
+    </main>
+  </div>
+
+  <!-- Modal cliente -->
+  <div class="modal-scrim" id="clientModal">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3 id="clientModalTitle">Nuevo cliente</h3>
+        <button class="iconbtn" id="clientClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="field"><label>Nombre del restaurante</label><input type="text" id="clName" placeholder="Ej. Café del Valle" /></div>
+      <div class="field">
+        <label>Enlace (se genera solo)</label>
+        <input type="text" id="clSlug" placeholder="cafe-del-valle" />
+        <p class="hint" style="margin:6px 0 0">Solo letras, números y guiones. Es la parte <code>?c=</code> del enlace.</p>
+      </div>
+      <div class="field">
+        <label id="clPassLabel">Contraseña de admin para el cliente</label>
+        <input type="text" id="clPass" placeholder="La que usará el restaurante para entrar a su panel" />
+        <p class="hint" style="margin:6px 0 0" id="clPassHint">El restaurante la usará para abrir su panel de administración.</p>
+      </div>
+      <div class="modal-ft">
+        <button class="pill-btn ghost" id="clCancel" type="button">Cancelar</button>
+        <button class="pill-btn" id="clSave" type="button">Crear cliente</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="atoast" id="atoast"></div>
+
+  <script src="assets/data.js?v=8"></script>
+  <script src="assets/owner.js?v=8"></script>
+</body>
+</html>

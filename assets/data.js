@@ -662,33 +662,82 @@
     };
   }
 
-  /* ---------- Lectura / escritura ---------- */
-  function load() {
+  /* ---------- Multi-cliente ----------
+     Sin ?c= en la URL → cliente por defecto (Hacienda, ya publicado).
+     Con ?c=slug → datos aislados de ese restaurante (llave namespaced). */
+  function tenantId() {
     try {
-      var raw = global.localStorage.getItem(KEY);
+      var c = new global.URLSearchParams(global.location.search).get("c") || "";
+      c = c.replace(/[^a-z0-9-]/gi, "").toLowerCase();
+      return c || null;
+    } catch (e) { return null; }
+  }
+  function keyFor(tid) {
+    return tid ? KEY + "__" + tid : KEY;
+  }
+
+  /* Semilla en blanco para un restaurante nuevo (la usa el panel de dueño). */
+  function blankSeed(name) {
+    return {
+      brand: { name: name || "Mi Restaurante", tagline: "", logoEmoji: "🍽️" },
+      theme: { accent: "#c2410c", accent2: "#f59e0b", font: "sans" },
+      info: { phone1: "", phone2: "", instagram: "", facebook: "", services: "", servicesEn: "" },
+      promo: { enabled: false, emoji: "🎉", title: "", text: "" },
+      categories: [
+        { id: "entradas", name: "Entradas", nameEn: "Appetizers", emoji: "🥗" },
+        { id: "principales", name: "Platos fuertes", nameEn: "Mains", emoji: "🍽️" },
+        { id: "bebidas", name: "Bebidas", nameEn: "Drinks", emoji: "🥤" }
+      ],
+      dishes: [],
+      tables: [
+        { id: "01", label: "Mesa 01" },
+        { id: "02", label: "Mesa 02" },
+        { id: "03", label: "Mesa 03" },
+        { id: "04", label: "Mesa 04" }
+      ]
+    };
+  }
+
+  /* ---------- Lectura / escritura (por cliente) ---------- */
+  function load(tid) {
+    if (tid === undefined) tid = tenantId();
+    try {
+      var raw = global.localStorage.getItem(keyFor(tid));
       if (!raw) {
-        var s = seed();
-        save(s);
+        var s = tid ? blankSeed(tid) : seed();
+        save(s, tid);
         return s;
       }
       return JSON.parse(raw);
     } catch (e) {
-      return seed();
+      return tid ? blankSeed(tid) : seed();
     }
   }
 
-  function save(data) {
+  function save(data, tid) {
+    if (tid === undefined) tid = tenantId();
     try {
-      global.localStorage.setItem(KEY, JSON.stringify(data));
+      global.localStorage.setItem(keyFor(tid), JSON.stringify(data));
     } catch (e) {
       /* almacenamiento lleno o bloqueado: la beta sigue en memoria */
     }
   }
 
-  function reset() {
-    var s = seed();
-    save(s);
+  function reset(tid) {
+    if (tid === undefined) tid = tenantId();
+    var s = tid ? blankSeed(tid) : seed();
+    save(s, tid);
     return s;
+  }
+
+  /* ---------- Registro de clientes (panel de dueño) ---------- */
+  var CLIENTS_KEY = "woy_clients";
+  function loadClients() {
+    try { return JSON.parse(global.localStorage.getItem(CLIENTS_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function saveClients(list) {
+    try { global.localStorage.setItem(CLIENTS_KEY, JSON.stringify(list)); } catch (e) {}
   }
 
   function uid(prefix) {
@@ -713,6 +762,11 @@
     save: save,
     reset: reset,
     seed: seed,
-    uid: uid
+    blankSeed: blankSeed,
+    uid: uid,
+    tenantId: tenantId,
+    keyFor: keyFor,
+    loadClients: loadClients,
+    saveClients: saveClients
   };
 })(window);
