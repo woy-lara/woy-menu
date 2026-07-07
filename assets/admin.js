@@ -696,9 +696,11 @@
     $("lockPass2").hidden = !creating;
     $("lockTitle").textContent = creating ? "Crea tu contraseña" : "Panel administrativo";
     $("lockHint").textContent = creating
-      ? "Primera vez: define la contraseña que protegerá este panel."
+      ? "Primera vez: escribe la MISMA contraseña en las dos casillas."
       : "Ingresa la contraseña para continuar.";
     $("lockBtn").textContent = creating ? "Guardar y entrar" : "Entrar";
+    $("lockPass").placeholder = creating ? "Escribe una contraseña nueva" : "Contraseña";
+    $("lockPass2").placeholder = "Repite la misma contraseña";
 
     function unlock() {
       try { sessionStorage.setItem(lockKey, "1"); } catch (e) {}
