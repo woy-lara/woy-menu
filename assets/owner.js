@@ -84,31 +84,46 @@
   /* ---------- Clientes ---------- */
   function dishCount(slug) {
     try {
-      var raw = localStorage.getItem(window.WOY.keyFor(slug));
+      var raw = localStorage.getItem(window.WOY.keyFor(slug || null));
       if (!raw) return 0;
       return (JSON.parse(raw).dishes || []).length;
     } catch (e) { return 0; }
   }
 
+  // Hacienda es el restaurante por defecto (menú publicado, sin ?c=).
+  // Se muestra siempre en el panel como "restaurante principal".
+  function ensureDefaultClient() {
+    var list = window.WOY.loadClients();
+    if (list.some(function (c) { return c.isDefault; })) return;
+    var d = window.WOY.load(null);
+    list.unshift({
+      isDefault: true,
+      slug: "",
+      name: (d.brand && d.brand.name) || "Menú principal",
+      emoji: (d.brand && d.brand.logoEmoji) || "🍽️",
+      passHash: !!(d.security && d.security.passHash)
+    });
+    window.WOY.saveClients(list);
+  }
+
   function renderClients() {
     var list = window.WOY.loadClients();
-    $("clientCount").textContent = list.length
-      ? list.length + (list.length === 1 ? " restaurante activo." : " restaurantes activos.")
-      : "Aún no tienes clientes. Crea el primero con “Nuevo cliente”.";
+    var extra = list.filter(function (c) { return !c.isDefault; }).length;
+    $("clientCount").textContent = extra
+      ? extra + (extra === 1 ? " cliente" : " clientes") + " además de tu restaurante principal."
+      : "Tu restaurante principal. Agrega más con “Nuevo cliente”.";
 
     var grid = $("clientGrid");
-    if (!list.length) {
-      grid.innerHTML = '<div class="client-empty"><i class="ti ti-building-store"></i>' +
-        "<p>Cada cliente es un restaurante con su propio menú, panel y enlace.</p></div>";
-      return;
-    }
-    grid.innerHTML = list.map(function (c) {
-      var menuUrl = baseUrl() + "index.html?c=" + c.slug;
-      var admUrl = baseUrl() + "admin.html?c=" + c.slug;
-      var n = dishCount(c.slug);
-      return '<div class="client-card">' +
+    grid.innerHTML = list.map(function (c, i) {
+      var isDef = !!c.isDefault;
+      var q = isDef ? "" : "?c=" + c.slug;
+      var menuUrl = baseUrl() + "index.html" + q;
+      var admUrl = baseUrl() + "admin.html" + q;
+      var n = dishCount(isDef ? null : c.slug);
+      return '<div class="client-card' + (isDef ? " is-default" : "") + '">' +
         '<div class="cc-head"><span class="cc-logo">' + esc(c.emoji || "🍽️") + "</span>" +
-        '<div class="cc-id"><b>' + esc(c.name) + "</b><small>?c=" + esc(c.slug) + "</small></div></div>" +
+        '<div class="cc-id"><b>' + esc(c.name) + (isDef ? ' <span class="cc-badge">Principal</span>' : "") + "</b>" +
+        "<small>" + (isDef ? "Menú publicado" : "?c=" + esc(c.slug)) + "</small></div></div>" +
         '<div class="cc-stat"><span><i class="ti ti-tools-kitchen-2"></i>' + n + " platos</span>" +
         '<span class="' + (c.passHash ? "ok" : "warn") + '"><i class="ti ti-' + (c.passHash ? "lock" : "lock-open") + '"></i>' +
         (c.passHash ? "Con contraseña" : "Sin contraseña") + "</span></div>" +
@@ -121,8 +136,8 @@
         '<a class="iconbtn" href="' + esc(admUrl) + '" target="_blank" rel="noopener" aria-label="Abrir panel"><i class="ti ti-external-link"></i></a></div>' +
         "</div>" +
         '<div class="cc-foot">' +
-        '<button class="pill-btn ghost sm" data-edit="' + esc(c.slug) + '"><i class="ti ti-pencil"></i>Editar</button>' +
-        '<button class="pill-btn ghost sm danger" data-del="' + esc(c.slug) + '"><i class="ti ti-trash"></i>Eliminar</button>' +
+        '<button class="pill-btn ghost sm" data-edit="' + i + '"><i class="ti ti-pencil"></i>Editar</button>' +
+        (isDef ? "" : '<button class="pill-btn ghost sm danger" data-del="' + i + '"><i class="ti ti-trash"></i>Eliminar</button>') +
         "</div></div>";
     }).join("");
 
@@ -130,24 +145,25 @@
       b.addEventListener("click", function () { copy(b.getAttribute("data-copy"), b.getAttribute("data-lbl")); });
     });
     grid.querySelectorAll("[data-edit]").forEach(function (b) {
-      b.addEventListener("click", function () { openClient(b.getAttribute("data-edit")); });
+      b.addEventListener("click", function () { openClient(+b.getAttribute("data-edit")); });
     });
     grid.querySelectorAll("[data-del]").forEach(function (b) {
-      b.addEventListener("click", function () { deleteClient(b.getAttribute("data-del")); });
+      b.addEventListener("click", function () { deleteClient(+b.getAttribute("data-del")); });
     });
   }
 
-  var editingSlug = null;
+  var editing = null; // objeto cliente en edición, o null para nuevo
 
-  function openClient(slug) {
-    editingSlug = slug || null;
+  function openClient(idx) {
     var list = window.WOY.loadClients();
-    var c = slug ? list.find(function (x) { return x.slug === slug; }) : null;
+    var c = (typeof idx === "number") ? list[idx] : null;
+    editing = c || null;
+    var isDef = c && c.isDefault;
     $("clientModalTitle").textContent = c ? "Editar cliente" : "Nuevo cliente";
     $("clSave").textContent = c ? "Guardar cambios" : "Crear cliente";
     $("clName").value = c ? c.name : "";
-    $("clSlug").value = c ? c.slug : "";
-    $("clSlug").readOnly = !!c; // no cambiar el slug de un cliente existente (rompería su enlace)
+    $("clSlug").value = isDef ? "(menú principal)" : (c ? c.slug : "");
+    $("clSlug").readOnly = !!c; // no cambiar el enlace de un cliente existente
     $("clPass").value = "";
     $("clPassLabel").textContent = c ? "Cambiar contraseña de admin (opcional)" : "Contraseña de admin para el cliente";
     $("clPassHint").textContent = c
@@ -160,58 +176,63 @@
 
   function saveClient() {
     var name = $("clName").value.trim();
-    var slug = slugify($("clSlug").value.trim() || name);
     if (!name) { toast("Escribe el nombre del restaurante", "ti-alert-circle"); return; }
-    if (!slug) { toast("El enlace no puede quedar vacío", "ti-alert-circle"); return; }
+
+    var isDef = editing && editing.isDefault;
+    var tid = editing ? (isDef ? null : editing.slug) : slugify($("clSlug").value.trim() || name);
+    if (!editing && !tid) { toast("El enlace no puede quedar vacío", "ti-alert-circle"); return; }
 
     var list = window.WOY.loadClients();
-    var existing = list.find(function (x) { return x.slug === slug; });
-    if (!editingSlug && existing) { toast("Ya existe un cliente con ese enlace", "ti-alert-circle"); return; }
+    if (!editing && list.some(function (x) { return x.slug === tid; })) {
+      toast("Ya existe un cliente con ese enlace", "ti-alert-circle"); return;
+    }
 
     var pass = $("clPass").value;
 
     function persist(passHash) {
-      // Datos del restaurante (namespaced por slug)
-      var d = window.WOY.load(slug);
+      var d = window.WOY.load(tid);
       d.brand = d.brand || {};
       d.brand.name = name;
       d.security = d.security || {};
       if (passHash) d.security.passHash = passHash;
-      window.WOY.save(d, slug);
+      window.WOY.save(d, tid);
 
-      // Registro de clientes
-      if (editingSlug) {
-        existing = list.find(function (x) { return x.slug === editingSlug; });
-        existing.name = name;
-        existing.emoji = d.brand.logoEmoji || "🍽️";
-        if (passHash) existing.passHash = true;
+      if (editing) {
+        var target = isDef
+          ? list.find(function (x) { return x.isDefault; })
+          : list.find(function (x) { return x.slug === editing.slug; });
+        if (target) {
+          target.name = name;
+          target.emoji = d.brand.logoEmoji || "🍽️";
+          if (passHash) target.passHash = true;
+        }
       } else {
-        list.push({ slug: slug, name: name, emoji: d.brand.logoEmoji || "🍽️", passHash: !!passHash });
+        list.push({ slug: tid, name: name, emoji: d.brand.logoEmoji || "🍽️", passHash: !!passHash });
       }
       window.WOY.saveClients(list);
       closeClient();
       renderClients();
-      toast(editingSlug ? "Cliente actualizado" : "Cliente “" + name + "” creado", "ti-check");
+      toast(editing ? "Cliente actualizado" : "Cliente “" + name + "” creado", "ti-check");
     }
 
     if (pass) sha256(pass).then(persist);
     else persist(null);
   }
 
-  function deleteClient(slug) {
+  function deleteClient(idx) {
     var list = window.WOY.loadClients();
-    var c = list.find(function (x) { return x.slug === slug; });
-    if (!c) return;
+    var c = list[idx];
+    if (!c || c.isDefault) return;
     if (!confirm("¿Eliminar a “" + c.name + "”? Se borrará su menú y su enlace dejará de funcionar.")) return;
-    window.WOY.saveClients(list.filter(function (x) { return x.slug !== slug; }));
-    try { localStorage.removeItem(window.WOY.keyFor(slug)); } catch (e) {}
+    window.WOY.saveClients(list.filter(function (x) { return x !== c; }));
+    try { localStorage.removeItem(window.WOY.keyFor(c.slug)); } catch (e) {}
     renderClients();
     toast("Cliente eliminado", "ti-trash");
   }
 
   /* ---------- Init ---------- */
   function boot() {
-    initLock(function () { renderClients(); });
+    initLock(function () { ensureDefaultClient(); renderClients(); });
 
     $("newClient").addEventListener("click", function () { openClient(null); });
     $("clientClose").addEventListener("click", closeClient);
