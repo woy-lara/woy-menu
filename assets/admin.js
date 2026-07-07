@@ -692,40 +692,48 @@
     try { ok = sessionStorage.getItem(lockKey) === "1"; } catch (e) {}
     if (ok) { done(); return; }
     var creating = !sec.passHash;
+    // Los clientes creados desde el panel de dueño traen contraseña pero sin
+    // usuario: en ese caso solo se pide la contraseña.
+    var needUser = creating || !!sec.user;
     $("lockScreen").hidden = false;
-    $("lockPass2").hidden = !creating;
-    $("lockTitle").textContent = creating ? "Crea tu contraseña" : "Panel administrativo";
+    $("lockUser").hidden = !needUser;
+    $("lockUser").value = "";
+    $("lockPass").value = "";
+    $("lockTitle").textContent = creating ? "Crea tu acceso" : "Panel administrativo";
     $("lockHint").textContent = creating
-      ? "Primera vez: escribe la MISMA contraseña en las dos casillas."
-      : "Ingresa la contraseña para continuar.";
+      ? "Primera vez: elige tu usuario y una contraseña para este panel."
+      : "Ingresa tu usuario y contraseña.";
     $("lockBtn").textContent = creating ? "Guardar y entrar" : "Entrar";
-    $("lockPass").placeholder = creating ? "Escribe una contraseña nueva" : "Contraseña";
-    $("lockPass2").placeholder = "Repite la misma contraseña";
+    $("lockUser").placeholder = "Usuario";
+    $("lockPass").placeholder = creating ? "Elige una contraseña" : "Contraseña";
 
     function unlock() {
       try { sessionStorage.setItem(lockKey, "1"); } catch (e) {}
       $("lockScreen").hidden = true;
       done();
     }
+    function fail(msg) { $("lockErr").textContent = msg; $("lockErr").hidden = false; }
     function submit() {
-      var v = $("lockPass").value;
       $("lockErr").hidden = true;
-      if (!v) return;
+      var u = ($("lockUser").value || "").trim();
+      var p = $("lockPass").value || "";
+      if (!p) return;
       if (creating) {
-        if (v.length < 4) { $("lockErr").textContent = "Mínimo 4 caracteres."; $("lockErr").hidden = false; return; }
-        if (v !== $("lockPass2").value) { $("lockErr").textContent = "Las contraseñas no coinciden."; $("lockErr").hidden = false; return; }
-        sha256(v, function (h) { sec.passHash = h; save(); unlock(); });
+        if (!u) return fail("Escribe un usuario.");
+        if (p.length < 4) return fail("La contraseña debe tener al menos 4 caracteres.");
+        sha256(p, function (h) { sec.user = u; sec.passHash = h; save(); unlock(); });
       } else {
-        sha256(v, function (h) {
-          if (h === sec.passHash) unlock();
-          else { $("lockErr").textContent = "Contraseña incorrecta."; $("lockErr").hidden = false; }
+        sha256(p, function (h) {
+          var userOk = !sec.user || u.toLowerCase() === String(sec.user).toLowerCase();
+          if (userOk && h === sec.passHash) unlock();
+          else fail("Usuario o contraseña incorrectos.");
         });
       }
     }
     $("lockBtn").addEventListener("click", submit);
+    $("lockUser").addEventListener("keydown", function (e) { if (e.key === "Enter") $("lockPass").focus(); });
     $("lockPass").addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
-    $("lockPass2").addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
-    $("lockPass").focus();
+    (needUser ? $("lockUser") : $("lockPass")).focus();
   }
 
   /* ---------- Init ---------- */
