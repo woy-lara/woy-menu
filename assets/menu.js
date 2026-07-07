@@ -131,6 +131,7 @@
     if (data.theme && data.theme.accent2) {
       document.documentElement.style.setProperty("--accent-2", data.theme.accent2);
     }
+    document.documentElement.classList.toggle("font-serif", (data.theme && data.theme.font) === "serif");
     $("brandName").textContent = data.brand.name || "WOY";
     $("brandMark").textContent = data.brand.logoEmoji || "🔥";
     applyStatic();

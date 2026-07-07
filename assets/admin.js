@@ -45,6 +45,7 @@
   function applyTheme() {
     document.documentElement.style.setProperty("--accent", data.theme.accent);
     document.documentElement.style.setProperty("--accent-2", data.theme.accent2);
+    document.documentElement.classList.toggle("font-serif", data.theme.font === "serif");
     $("sideMark").textContent = data.brand.logoEmoji || "🔥";
   }
   function initBrand() {
@@ -55,6 +56,7 @@
     $("accent2").value = data.theme.accent2;
 
     renderThemes();
+    renderFonts();
 
     $("brandName").addEventListener("input", function (e) { data.brand.name = e.target.value; save(); });
     $("brandEmoji").addEventListener("input", function (e) { data.brand.logoEmoji = e.target.value; applyTheme(); save(); });
@@ -106,6 +108,30 @@
         $("accent2").value = th.b;
         applyTheme(); save(); renderThemes();
         toast("Tema " + th.name + " aplicado", "ti-palette");
+      });
+    });
+  }
+
+  /* Tipografía del menú: dos modelos */
+  var FONTS = [
+    { id: "sans", name: "Moderna", desc: "General Sans · limpia y actual", family: '"General Sans", sans-serif' },
+    { id: "serif", name: "Elegante", desc: "Sentient · clásica de restaurante", family: '"Sentient", Georgia, serif' }
+  ];
+  function renderFonts() {
+    var box = $("fontPick");
+    if (!box) return;
+    var cur = data.theme.font === "serif" ? "serif" : "sans";
+    box.innerHTML = FONTS.map(function (f) {
+      return '<button type="button" class="font-card' + (cur === f.id ? " on" : "") + '" data-font="' + f.id + '">' +
+        '<span class="fc-aa" style="font-family:' + f.family + '">Aa</span>' +
+        '<span class="tc-name">' + f.name + '</span>' +
+        '<span class="tc-desc">' + f.desc + "</span></button>";
+    }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll("[data-font]"), function (b) {
+      b.addEventListener("click", function () {
+        data.theme.font = b.getAttribute("data-font");
+        applyTheme(); save(); renderFonts(); renderPromoPreview();
+        toast("Tipografía " + (data.theme.font === "serif" ? "Elegante" : "Moderna") + " aplicada", "ti-typography");
       });
     });
   }
@@ -166,6 +192,12 @@
   function renderPromoPreview() {
     var p = data.promo || {};
     var box = $("promoPreview");
+    var head = $("promoHead");
+    if (head) {
+      head.innerHTML =
+        '<span class="mk-mark">' + esc(data.brand.logoEmoji || "🍽️") + "</span>" +
+        "<b>" + esc(data.brand.name || "Mi restaurante") + "</b>";
+    }
     $("promoClear").hidden = !(p.media && p.media.src);
     if (!p.enabled) {
       box.innerHTML = '<div class="mk-off"><i class="ti ti-eye-off"></i>Pop-up desactivado.<br>Actívalo para verlo aquí.</div>';

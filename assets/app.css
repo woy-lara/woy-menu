@@ -1349,3 +1349,11 @@
 .cat.is-spy .ce {
   background: rgba(255, 255, 255, 0.6);
 }
+
+/* ---------- Tipografía de titulares (Moderna/Elegante) ---------- */
+h1, h2, h3, h4, .brand {
+  font-family: var(--font-head);
+}
+html.font-serif .hello h1 {
+  letter-spacing: -0.01em;
+}

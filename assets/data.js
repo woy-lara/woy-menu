@@ -16,7 +16,8 @@
       },
       theme: {
         accent: "#4a5d3a",
-        accent2: "#c9a15a"
+        accent2: "#c9a15a",
+        font: "sans"
       },
       info: {
         phone1: "730-8313",

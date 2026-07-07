@@ -1056,3 +1056,71 @@ body.admin {
   color: #c0392b !important;
   font-weight: 500;
 }
+
+/* ---------- Selector de tipografía ---------- */
+.font-pick {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 340px;
+}
+.font-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  text-align: center;
+}
+.font-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.font-card.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.font-card .fc-aa {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+/* ---------- Cabecera del visor (logo + nombre) ---------- */
+.mk-phone {
+  align-content: start;
+  gap: 12px;
+}
+.mk-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 2px 4px 0;
+}
+.mk-head .mk-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
+.mk-head b {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-family: var(--font-head);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mk-pop .pp-body h4 {
+  font-family: var(--font-head);
+}
