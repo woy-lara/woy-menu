@@ -19,6 +19,7 @@
         accent2: "#c9a15a",
         font: "sans"
       },
+      settings: { defaultLang: "es", currency: "$" },
       info: {
         phone1: "730-8313",
         phone2: "6676-0653",
@@ -681,6 +682,7 @@
     return {
       brand: { name: name || "Mi Restaurante", tagline: "", logoEmoji: "🍽️" },
       theme: { accent: "#c2410c", accent2: "#f59e0b", font: "sans" },
+      settings: { defaultLang: "es", currency: "$" },
       info: { phone1: "", phone2: "", instagram: "", facebook: "", services: "", servicesEn: "" },
       promo: { enabled: false, emoji: "🎉", title: "", text: "" },
       categories: [

@@ -1124,3 +1124,44 @@ body.admin {
 .mk-pop .pp-body h4 {
   font-family: var(--font-head);
 }
+
+/* ---------- Barra lateral: marca del cliente + crédito ---------- */
+.logo span b {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: #fff;
+}
+.logo span small {
+  display: block;
+  font-size: 11px;
+  opacity: 0.55;
+  margin-top: 2px;
+}
+.side-credit {
+  font-size: 11px;
+  opacity: 0.5;
+  padding: 8px 10px 2px;
+  line-height: 1.3;
+}
+.side-credit b {
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* ---------- Configuración ---------- */
+.rowbtns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+.pill-btn.ghost.danger {
+  color: #c0392b;
+  border-color: #f1c7c1;
+}
+.pill-btn.ghost.danger:hover {
+  background: #fdecea;
+}

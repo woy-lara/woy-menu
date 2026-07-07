@@ -8,7 +8,7 @@
 
   /* ---------- Utilidades ---------- */
   function $(id) { return document.getElementById(id); }
-  function money(n) { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
+  function money(n) { return ((data.settings && data.settings.currency) || "$") + (Math.round(n * 100) / 100).toFixed(2); }
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
@@ -46,7 +46,8 @@
     document.documentElement.style.setProperty("--accent", data.theme.accent);
     document.documentElement.style.setProperty("--accent-2", data.theme.accent2);
     document.documentElement.classList.toggle("font-serif", data.theme.font === "serif");
-    $("sideMark").textContent = data.brand.logoEmoji || "🔥";
+    $("sideMark").textContent = data.brand.logoEmoji || "🍽️";
+    if ($("sideName")) $("sideName").textContent = data.brand.name || "Restaurante";
   }
   function initBrand() {
     $("brandName").value = data.brand.name || "";
@@ -668,9 +669,74 @@
     w.document.close();
   }
 
-  /* ---------- Reset ---------- */
-  function initReset() {
-    $("resetBtn").addEventListener("click", function () {
+  /* ---------- Configuración ---------- */
+  function initConfig() {
+    data.settings = data.settings || {};
+    data.security = data.security || {};
+    $("cfgUser").value = data.security.user || "";
+    $("cfgLang").value = data.settings.defaultLang || "es";
+    $("cfgCurrency").value = data.settings.currency || "$";
+
+    $("cfgSaveAccount").addEventListener("click", function () {
+      var u = $("cfgUser").value.trim();
+      var p = $("cfgPass").value;
+      if (!u) { toast("El usuario no puede quedar vacío", "ti-alert-circle"); return; }
+      data.security.user = u;
+      if (p) {
+        if (p.length < 4) { toast("La contraseña debe tener al menos 4 caracteres", "ti-alert-circle"); return; }
+        sha256(p, function (h) {
+          data.security.passHash = h; save();
+          $("cfgPass").value = "";
+          toast("Cuenta actualizada", "ti-check");
+        });
+      } else {
+        save();
+        toast("Usuario actualizado", "ti-check");
+      }
+    });
+
+    $("cfgLogout").addEventListener("click", function () {
+      var lockKey = "woy_admin_ok__" + (window.WOY.tenantId() || "default");
+      try { sessionStorage.removeItem(lockKey); } catch (e) {}
+      location.reload();
+    });
+
+    $("cfgLang").addEventListener("change", function (e) {
+      data.settings.defaultLang = e.target.value; save();
+      toast("Idioma por defecto guardado", "ti-check");
+    });
+    $("cfgCurrency").addEventListener("input", function (e) {
+      data.settings.currency = e.target.value.trim() || "$"; save(); renderDishes();
+    });
+
+    $("cfgExport").addEventListener("click", function () {
+      var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "woy-menu-" + (window.WOY.tenantId() || "principal") + ".json";
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(a.href);
+      toast("Respaldo descargado", "ti-download");
+    });
+    $("cfgImport").addEventListener("click", function () { $("cfgImportFile").click(); });
+    $("cfgImportFile").addEventListener("change", function (e) {
+      var f = e.target.files[0]; e.target.value = "";
+      if (!f) return;
+      var r = new FileReader();
+      r.onload = function (ev) {
+        try {
+          var obj = JSON.parse(ev.target.result);
+          if (!obj || !Array.isArray(obj.dishes)) throw new Error("formato");
+          if (!confirm("Esto reemplazará el menú actual con el del respaldo. ¿Continuar?")) return;
+          window.WOY.save(obj);
+          toast("Respaldo importado", "ti-check");
+          setTimeout(function () { location.reload(); }, 700);
+        } catch (err) { toast("Archivo inválido: no es un respaldo de WOY", "ti-alert-circle"); }
+      };
+      r.readAsText(f);
+    });
+
+    $("cfgReset").addEventListener("click", function () {
       if (!confirm("¿Restablecer todo el menú a los datos de ejemplo? Se perderán tus cambios.")) return;
       window.WOY.reset();
       location.reload();
@@ -744,7 +810,7 @@
     if (vm) vm.setAttribute("href", menuUrl());
     initNav();
     initDishModal();
-    initReset();
+    initConfig();
     initBrand();
     initMarketing();
     initCatAdd();

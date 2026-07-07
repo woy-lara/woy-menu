@@ -8,8 +8,8 @@
   <meta name="theme-color" content="#191512" />
   <title>WOY — Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
-  <link rel="stylesheet" href="assets/tokens.css?v=10" />
-  <link rel="stylesheet" href="assets/admin.css?v=10" />
+  <link rel="stylesheet" href="assets/tokens.css?v=11" />
+  <link rel="stylesheet" href="assets/admin.css?v=11" />
 </head>
 <body class="admin">
   <div class="lock" id="lockScreen" hidden>
@@ -27,18 +27,19 @@
     <!-- Sidebar -->
     <aside class="side">
       <div class="logo">
-        <span class="mark" id="sideMark">🔥</span>
-        <span>WOY<small>Panel admin</small></span>
+        <span class="mark" id="sideMark">🍽️</span>
+        <span><b id="sideName">Restaurante</b><small>Panel de administración</small></span>
       </div>
       <nav id="nav">
         <button data-sec="catalogo" class="is-active"><i class="ti ti-tools-kitchen-2"></i><span class="lbl">Catálogo</span></button>
         <button data-sec="marca"><i class="ti ti-palette"></i><span class="lbl">Marca</span></button>
         <button data-sec="marketing"><i class="ti ti-speakerphone"></i><span class="lbl">Marketing</span></button>
         <button data-sec="mesas"><i class="ti ti-qrcode"></i><span class="lbl">Mesas y QR</span></button>
+        <button data-sec="config"><i class="ti ti-settings"></i><span class="lbl">Configuración</span></button>
       </nav>
       <div class="side-foot">
         <a href="index.html" target="_blank" rel="noopener"><i class="ti ti-external-link"></i><span>Ver menú</span></a>
-        <button id="resetBtn"><i class="ti ti-refresh"></i><span>Restablecer datos</span></button>
+        <div class="side-credit">Desarrollado por <b>WOY Projects</b></div>
       </div>
     </aside>
 
@@ -166,6 +167,50 @@
         </div>
         <div class="qr-grid" id="qrGrid"></div>
       </section>
+
+      <!-- Configuración -->
+      <section class="section" id="sec-config">
+        <div class="page-hd"><div><h1>Configuración</h1><p>Cuenta, preferencias del menú y respaldo de tus datos.</p></div></div>
+
+        <div class="card">
+          <h3><i class="ti ti-shield-lock" style="margin-right:6px"></i>Cuenta y seguridad</h3>
+          <p class="hint">Cambia el usuario y la contraseña con los que entras a este panel.</p>
+          <div class="row2">
+            <div class="field"><label>Usuario</label><input type="text" id="cfgUser" autocomplete="username" /></div>
+            <div class="field"><label>Nueva contraseña</label><input type="password" id="cfgPass" placeholder="Déjala vacía para no cambiarla" autocomplete="new-password" /></div>
+          </div>
+          <div class="rowbtns">
+            <button class="pill-btn" id="cfgSaveAccount" type="button"><i class="ti ti-device-floppy"></i>Guardar cambios</button>
+            <button class="pill-btn ghost" id="cfgLogout" type="button"><i class="ti ti-logout"></i>Cerrar sesión</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="ti ti-adjustments" style="margin-right:6px"></i>Preferencias del menú</h3>
+          <p class="hint">Cómo se muestra el menú a tus comensales por defecto.</p>
+          <div class="row2">
+            <div class="field">
+              <label>Idioma por defecto</label>
+              <select id="cfgLang"><option value="es">Español</option><option value="en">English</option></select>
+            </div>
+            <div class="field">
+              <label>Símbolo de moneda</label>
+              <input type="text" id="cfgCurrency" maxlength="4" placeholder="$" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="ti ti-database" style="margin-right:6px"></i>Datos y respaldo</h3>
+          <p class="hint">Descarga una copia de tu menú por seguridad, o restáuralo desde un respaldo. Restablecer borra todo y vuelve al menú de ejemplo.</p>
+          <div class="rowbtns">
+            <button class="pill-btn ghost" id="cfgExport" type="button"><i class="ti ti-download"></i>Exportar respaldo</button>
+            <button class="pill-btn ghost" id="cfgImport" type="button"><i class="ti ti-upload"></i>Importar respaldo</button>
+            <input type="file" id="cfgImportFile" accept="application/json" hidden />
+            <button class="pill-btn ghost danger" id="cfgReset" type="button"><i class="ti ti-refresh"></i>Restablecer datos</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -241,7 +286,7 @@
   <div class="atoast" id="atoast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
-  <script src="assets/data.js?v=10"></script>
-  <script src="assets/admin.js?v=10"></script>
+  <script src="assets/data.js?v=11"></script>
+  <script src="assets/admin.js?v=11"></script>
 </body>
 </html>

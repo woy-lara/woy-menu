@@ -7,9 +7,14 @@
   var LANG_KEY = "woy_lang";
 
   /* ---------- Idioma (ES/EN) ---------- */
+  // Preferencia guardada por el visitante; si no la hay, el idioma por
+  // defecto que el admin configuró para el menú.
   var lang = (function () {
-    try { return localStorage.getItem(LANG_KEY) === "en" ? "en" : "es"; }
-    catch (e) { return "es"; }
+    try {
+      var stored = localStorage.getItem(LANG_KEY);
+      if (stored === "en" || stored === "es") return stored;
+    } catch (e) {}
+    return (data.settings && data.settings.defaultLang) || "es";
   })();
   var T = {
     es: {
@@ -79,7 +84,8 @@
 
   /* ---------- Utilidades ---------- */
   function $(id) { return document.getElementById(id); }
-  function money(n) { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
+  var CURRENCY = (data.settings && data.settings.currency) || "$";
+  function money(n) { return CURRENCY + (Math.round(n * 100) / 100).toFixed(2); }
   function el(tag, cls, html) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
