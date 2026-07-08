@@ -139,11 +139,13 @@
 
   /* ---------- Marketing ---------- */
   function initMarketing() {
-    data.promo = data.promo || { enabled: false, emoji: "🍽️", title: "", text: "" };
+    data.promo = data.promo || { enabled: false, emoji: "🍽️", title: "", titleEn: "", text: "", textEn: "" };
     $("promoTgl").classList.toggle("on", !!data.promo.enabled);
     $("promoTitle").value = data.promo.title || "";
     $("promoEmoji").value = data.promo.emoji || "";
     $("promoText").value = data.promo.text || "";
+    $("promoTitleEn").value = data.promo.titleEn || "";
+    $("promoTextEn").value = data.promo.textEn || "";
 
     $("promoToggle").addEventListener("click", function (e) {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
@@ -155,6 +157,8 @@
     $("promoTitle").addEventListener("input", function (e) { data.promo.title = e.target.value; save(); renderPromoPreview(); });
     $("promoEmoji").addEventListener("input", function (e) { data.promo.emoji = e.target.value; save(); renderPromoPreview(); });
     $("promoText").addEventListener("input", function (e) { data.promo.text = e.target.value; save(); renderPromoPreview(); });
+    $("promoTitleEn").addEventListener("input", function (e) { data.promo.titleEn = e.target.value; save(); });
+    $("promoTextEn").addEventListener("input", function (e) { data.promo.textEn = e.target.value; save(); });
 
     $("promoPick").addEventListener("click", function () { $("promoFile").click(); });
     $("promoFile").addEventListener("change", function (e) {

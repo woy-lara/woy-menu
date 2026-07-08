@@ -32,7 +32,9 @@
         enabled: true,
         emoji: "📞",
         title: "Reservas",
-        text: "Reserva tu mesa al 730-8313 ó 6676-0653."
+        titleEn: "Reservations",
+        text: "Reserva tu mesa al 730-8313 ó 6676-0653.",
+        textEn: "Book your table at 730-8313 or 6676-0653."
       },
       categories: [
         { id: "entradas", name: "Entradas", nameEn: "Appetizers", emoji: "🥗" },
@@ -684,7 +686,7 @@
       theme: { accent: "#c2410c", accent2: "#f59e0b", font: "sans" },
       settings: { defaultLang: "es", currency: "$" },
       info: { phone1: "", phone2: "", instagram: "", facebook: "", services: "", servicesEn: "" },
-      promo: { enabled: false, emoji: "🎉", title: "", text: "" },
+      promo: { enabled: false, emoji: "🎉", title: "", titleEn: "", text: "", textEn: "" },
       categories: [
         { id: "entradas", name: "Entradas", nameEn: "Appetizers", emoji: "🥗" },
         { id: "principales", name: "Platos fuertes", nameEn: "Mains", emoji: "🍽️" },

@@ -103,6 +103,8 @@
   function tagLabel(td) {
     return lang === "en" && td.labelEn ? td.labelEn : td.label;
   }
+  function pTitle(p) { return lang === "en" && p.titleEn ? p.titleEn : (p.title || ""); }
+  function pText(p) { return lang === "en" && p.textEn ? p.textEn : (p.text || ""); }
   function tagChip(id) {
     var td = tagDef(id);
     if (!td) return "";
@@ -186,7 +188,7 @@
     var box = el("div", "promo rise");
     box.innerHTML =
       '<span class="pe">' + esc(p.emoji || "🍽️") + "</span>" +
-      '<span class="pt"><b>' + esc(p.title || "") + "</b><span>" + esc(p.text || "") + "</span></span>" +
+      '<span class="pt"><b>' + esc(pTitle(p)) + "</b><span>" + esc(pText(p)) + "</span></span>" +
       '<button class="px" aria-label="Cerrar promoción"><i class="ti ti-x"></i></button>';
     box.querySelector(".px").addEventListener("click", function () { box.remove(); });
     host.appendChild(box);
@@ -205,8 +207,8 @@
         ? '<video src="' + esc(p.media.src) + '" autoplay muted loop playsinline></video>'
         : '<img src="' + esc(p.media.src) + '" alt="">') +
       '<button class="pp-x" aria-label="Cerrar"><i class="ti ti-x"></i></button></div>' +
-      '<div class="pp-body"><h4>' + (p.emoji ? esc(p.emoji) + " " : "") + esc(p.title || "") + "</h4>" +
-      (p.text ? "<p>" + esc(p.text) + "</p>" : "") +
+      '<div class="pp-body"><h4>' + (p.emoji ? esc(p.emoji) + " " : "") + esc(pTitle(p)) + "</h4>" +
+      (pText(p) ? "<p>" + esc(pText(p)) + "</p>" : "") +
       '<button class="pp-btn">' + t("promoCta") + "</button></div></div>";
     function dismiss() {
       try { sessionStorage.setItem("woy_promo_seen", "1"); } catch (e) {}
@@ -672,6 +674,7 @@
       try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
       closeSheets();
       applyStatic();
+      renderPromo();
       renderCats();
       renderFeatured();
       renderList();

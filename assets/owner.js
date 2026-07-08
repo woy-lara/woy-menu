@@ -3,10 +3,11 @@
   "use strict";
 
   // Credencial del dueño. La contraseña NO va en texto plano: se compara
-  // por hash SHA-256. Aun así, esto es disuasión del lado del cliente —
-  // la seguridad real llega con el backend.
+  // por hash SHA-256. Es una passphrase fuerte y DISTINTA de la del panel
+  // del restaurante, para que descubrir una no comprometa la otra. Aun así,
+  // esto es disuasión del lado del cliente — la seguridad real llega con el backend.
   var OWNER_USER = "lara";
-  var OWNER_HASH = "07d9e0054b705aee4ab6e2b8579732f2b535734dac908a95a83be1dd7c449b4b";
+  var OWNER_HASH = "fc7f28067c0a7dd4fedb9c0a5b9ce008a8c0bf5a3a41fcc863b06b9422766bec";
 
   function $(id) { return document.getElementById(id); }
   function esc(s) {
@@ -242,7 +243,9 @@
       if (e.target === $("clientModal")) closeClient();
     });
     $("clName").addEventListener("input", function () {
-      if (!editingSlug) $("clSlug").value = slugify($("clName").value);
+      // Solo autogeneramos el enlace al crear un cliente nuevo; al editar
+      // uno existente el campo va de solo lectura y no se toca.
+      if (!editing) $("clSlug").value = slugify($("clName").value);
     });
     $("ownLogout").addEventListener("click", function () {
       try { sessionStorage.removeItem("woy_owner_ok"); } catch (e) {}
