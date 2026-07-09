@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#4a5d3a" />
+  <title>WOY — Accesos</title>
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="assets/tokens.css?v=12" />
+  <style>
+    body { background: var(--bg-warm); }
+    .hub {
+      max-width: 460px; margin: 0 auto; min-height: 100dvh;
+      display: flex; flex-direction: column;
+      padding: max(30px, env(safe-area-inset-top)) 20px max(26px, env(safe-area-inset-bottom));
+    }
+    .hub-head { text-align: center; padding: 22px 0 26px; }
+    .hub-logo {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 76px; height: 76px; border-radius: 24px; font-size: 38px;
+      background: var(--accent-soft); box-shadow: var(--shadow-sm); margin-bottom: 16px;
+    }
+    .hub-head h1 { font-family: var(--font-head); font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+    .hub-head p { color: var(--ink-2); font-size: 14.5px; margin-top: 6px; }
+    .apps { display: flex; flex-direction: column; gap: 12px; }
+    .grp-lbl {
+      font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink-3); margin: 14px 6px 2px;
+    }
+    .app {
+      display: flex; align-items: center; gap: 15px; text-decoration: none; color: inherit;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card);
+      padding: 15px 16px; box-shadow: var(--shadow-sm);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+    .app:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--line-2); }
+    .app:active { transform: translateY(0); }
+    .app .ic {
+      flex: none; width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: #fff; background: var(--accent);
+    }
+    .app.a-admin .ic { background: var(--accent-2); color: var(--ink); }
+    .app.a-owner .ic { background: var(--ink); }
+    .app .tx { flex: 1; min-width: 0; }
+    .app .tx b { display: block; font-size: 16px; font-weight: 600; }
+    .app .tx small { display: block; color: var(--ink-3); font-size: 12.5px; margin-top: 2px; line-height: 1.35; }
+    .app .go { color: var(--ink-3); font-size: 20px; transition: transform 0.16s ease; }
+    .app:hover .go { transform: translateX(3px); color: var(--ink-2); }
+    .hub-foot { margin-top: auto; padding-top: 26px; text-align: center; color: var(--ink-3); font-size: 12.5px; }
+    .hub-foot b { color: var(--ink-2); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main class="hub">
+    <header class="hub-head">
+      <span class="hub-logo" id="hubLogo">🌿</span>
+      <h1 id="hubName">WOY</h1>
+      <p id="hubSub">Selecciona a dónde quieres ir</p>
+    </header>
+
+    <div class="apps" id="apps">
+      <a class="app a-menu" id="lnkMenu" href="index.html">
+        <span class="ic"><i class="ti ti-tools-kitchen-2"></i></span>
+        <span class="tx"><b>Ver el menú</b><small>Lo que ve el comensal al escanear el QR de la mesa</small></span>
+        <i class="ti ti-chevron-right go"></i>
+      </a>
+      <a class="app a-admin" id="lnkAdmin" href="admin.html">
+        <span class="ic"><i class="ti ti-tools"></i></span>
+        <span class="tx"><b>Panel del restaurante</b><small>Editar platos, precios, marca y códigos QR</small></span>
+        <i class="ti ti-chevron-right go"></i>
+      </a>
+      <div class="grp-lbl" id="ownerLbl">Administración WOY</div>
+      <a class="app a-owner" id="lnkOwner" href="owner.html">
+        <span class="ic"><i class="ti ti-layout-grid"></i></span>
+        <span class="tx"><b>Panel de dueño</b><small>Gestiona todos tus restaurantes</small></span>
+        <i class="ti ti-chevron-right go"></i>
+      </a>
+    </div>
+
+    <footer class="hub-foot">Desarrollado por <b>WOY Projects</b></footer>
+  </main>
+
+  <script src="assets/data.js?v=12"></script>
+  <script>
+    (function () {
+      "use strict";
+      var d = window.WOY.load();
+      var tid = window.WOY.tenantId();
+      var q = tid ? "?c=" + tid : "";
+
+      // Marca y tema del restaurante activo
+      if (d.brand) {
+        document.getElementById("hubLogo").textContent = d.brand.logoEmoji || "🍽️";
+        document.getElementById("hubName").textContent = d.brand.name || "WOY";
+      }
+      if (d.theme) {
+        if (d.theme.accent) document.documentElement.style.setProperty("--accent", d.theme.accent);
+        if (d.theme.accent2) document.documentElement.style.setProperty("--accent-2", d.theme.accent2);
+        document.documentElement.classList.toggle("font-serif", d.theme.font === "serif");
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m && d.theme.accent) m.setAttribute("content", d.theme.accent);
+      }
+
+      // Enlaces (arrastran ?c= del restaurante; el panel de dueño es global)
+      document.getElementById("lnkMenu").href = "index.html" + q;
+      document.getElementById("lnkAdmin").href = "admin.html" + q;
+
+      // El acceso al panel de dueño solo aparece en el hub principal,
+      // no en el de un cliente específico.
+      if (tid) {
+        document.getElementById("ownerLbl").hidden = true;
+        document.getElementById("lnkOwner").hidden = true;
+      }
+    })();
+  </script>
+</body>
+</html>
