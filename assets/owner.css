@@ -506,3 +506,26 @@ body.owner {
 .act-main { flex: 1; min-width: 0; }
 .act-main b { display: block; font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .act-main small { display: block; font-size: 11.5px; color: var(--ink-3); }
+
+/* ---------- Historial de pagos (v15) ---------- */
+.hist-sum {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; margin-bottom: 12px; background: var(--surface-2); border-radius: 12px;
+}
+.hist-sum span { font-size: 12.5px; color: var(--ink-2); }
+.hist-sum b { font-size: 15px; font-weight: 700; color: #1f9d55; }
+.hist-list { display: flex; flex-direction: column; max-height: 52vh; overflow-y: auto; }
+.hist-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 12px 6px; border-top: 1px solid var(--line); cursor: pointer;
+}
+.hist-row:first-child { border-top: none; }
+.hist-row:hover { background: var(--surface-2); border-radius: 10px; }
+.hist-main { flex: 1; min-width: 0; }
+.hist-main b { display: block; font-size: 14px; font-weight: 600; text-transform: capitalize; }
+.hist-main small { display: block; font-size: 11.5px; color: var(--ink-3); font-family: ui-monospace, monospace; }
+.hist-amt { font-size: 15px; font-weight: 700; }
+.hist-row .ti { color: var(--ink-3); font-size: 18px; }
+
+/* El recibo (invModal) se abre por encima del historial de pagos */
+#invModal { z-index: 95; }

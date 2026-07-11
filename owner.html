@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="assets/tokens.css?v=14" />
   <link rel="stylesheet" href="assets/admin.css?v=14" />
-  <link rel="stylesheet" href="assets/owner.css?v=14" />
+  <link rel="stylesheet" href="assets/owner.css?v=15" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -211,6 +211,21 @@
     </div>
   </div>
 
+  <!-- ===== Modal historial de pagos ===== -->
+  <div class="modal-scrim" id="histModal">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3 id="histTitle">Historial de pagos</h3>
+        <button class="iconbtn" id="histClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="hist-sum" id="histSum"></div>
+      <div class="hist-list" id="histList"></div>
+      <div class="modal-ft">
+        <button class="pill-btn" id="histDone" type="button">Listo</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== Modal solicitud ===== -->
   <div class="modal-scrim" id="reqModal">
     <div class="modal">
@@ -270,6 +285,6 @@
   <div class="atoast" id="atoast"></div>
 
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/owner.js?v=14"></script>
+  <script src="assets/owner.js?v=15"></script>
 </body>
 </html>

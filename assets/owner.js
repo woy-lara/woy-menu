@@ -675,12 +675,30 @@
       "<scr" + "ipt>window.onload=function(){setTimeout(function(){window.print()},250)}</scr" + "ipt></body></html>");
     w.document.close();
   }
+  var histSlug = null;
   function openHistory(slug) {
     var c = findClient(allClients(), slug);
     if (!c) return;
-    if (!c.payments.length) { toast("Aún no hay recibos para " + c.name, "ti-receipt-off"); return; }
-    var last = c.payments[c.payments.length - 1];
-    showReceipt(slug, last.id);
+    histSlug = slug;
+    var pays = (c.payments || []).slice().sort(function (a, b) { return (a.date || "") < (b.date || "") ? 1 : -1; });
+    var total = pays.reduce(function (s, p) { return s + (+p.amount || 0); }, 0);
+    $("histTitle").textContent = "Pagos · " + c.name;
+    $("histSum").innerHTML = pays.length
+      ? '<span>' + pays.length + " pago" + (pays.length === 1 ? "" : "s") + "</span><b>" + money(total) + " cobrado en total</b>"
+      : "";
+    $("histList").innerHTML = pays.length
+      ? pays.map(function (p) {
+          return '<button class="hist-row" data-rcpt="' + esc(p.id) + '">' +
+            '<span class="hist-main"><b>' + esc(periodLabel(p.period)) + "</b>" +
+            "<small>" + fmtDate(p.date) + " · " + esc(p.method) + " · " + esc(p.invoice) + "</small></span>" +
+            '<span class="hist-amt">' + money(p.amount) + "</span>" +
+            '<i class="ti ti-receipt"></i></button>';
+        }).join("")
+      : '<div class="mini-empty">Aún no hay pagos registrados para este cliente.</div>';
+    $("histList").querySelectorAll("[data-rcpt]").forEach(function (b) {
+      b.addEventListener("click", function () { showReceipt(histSlug, b.getAttribute("data-rcpt")); });
+    });
+    $("histModal").classList.add("is-open");
   }
 
   /* ---------- Solicitudes ---------- */
@@ -858,6 +876,10 @@
     $("payCancel").addEventListener("click", closePay);
     $("paySave").addEventListener("click", savePay);
     $("payModal").addEventListener("click", function (e) { if (e.target === $("payModal")) closePay(); });
+
+    $("histClose").addEventListener("click", function () { $("histModal").classList.remove("is-open"); });
+    $("histDone").addEventListener("click", function () { $("histModal").classList.remove("is-open"); });
+    $("histModal").addEventListener("click", function (e) { if (e.target === $("histModal")) $("histModal").classList.remove("is-open"); });
 
     $("invClose").addEventListener("click", function () { $("invModal").classList.remove("is-open"); });
     $("invDone").addEventListener("click", function () { $("invModal").classList.remove("is-open"); });
