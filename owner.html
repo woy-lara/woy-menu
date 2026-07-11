@@ -8,9 +8,9 @@
   <meta name="theme-color" content="#191512" />
   <title>WOY Projects — Panel de control</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
-  <link rel="stylesheet" href="assets/tokens.css?v=9" />
-  <link rel="stylesheet" href="assets/admin.css?v=9" />
-  <link rel="stylesheet" href="assets/owner.css?v=9" />
+  <link rel="stylesheet" href="assets/tokens.css?v=13" />
+  <link rel="stylesheet" href="assets/admin.css?v=13" />
+  <link rel="stylesheet" href="assets/owner.css?v=13" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -35,35 +35,112 @@
       </div>
       <div class="owner-actions">
         <button class="pill-btn" id="newClient"><i class="ti ti-plus"></i>Nuevo cliente</button>
+        <button class="iconbtn" id="bizProfile" aria-label="Datos de facturación" title="Datos de facturación"><i class="ti ti-settings"></i></button>
         <button class="iconbtn" id="ownLogout" aria-label="Cerrar sesión" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
       </div>
     </header>
 
+    <nav class="owner-tabs" id="ownerTabs">
+      <button data-tab="dashboard" class="is-active"><i class="ti ti-layout-dashboard"></i>Panel</button>
+      <button data-tab="clientes"><i class="ti ti-building-store"></i>Clientes</button>
+      <button data-tab="cobros"><i class="ti ti-cash"></i>Cobros<span class="tab-dot" id="cobrosDot" hidden></span></button>
+      <button data-tab="solicitudes"><i class="ti ti-clipboard-list"></i>Solicitudes<span class="tab-dot" id="solDot" hidden></span></button>
+    </nav>
+
     <main class="owner-main">
-      <div class="owner-hd">
-        <div><h1>Mis clientes</h1><p id="clientCount">Restaurantes que gestionas con WOY.</p></div>
-      </div>
-      <div class="client-grid" id="clientGrid"></div>
+      <!-- ======== PANEL / DASHBOARD ======== -->
+      <section class="tabsec is-active" id="tab-dashboard">
+        <div class="owner-hd"><div><h1>Panel</h1><p>Resumen de tu negocio de un vistazo.</p></div></div>
+        <div class="kpi-row" id="kpiRow"></div>
+        <div class="dash-cols">
+          <div class="card">
+            <div class="card-hd"><h3>Próximos cobros</h3><button class="linkbtn" data-goto="cobros">Ver todos</button></div>
+            <div id="dashCobros"></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>Solicitudes pendientes</h3><button class="linkbtn" data-goto="solicitudes">Ver todas</button></div>
+            <div id="dashSol"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======== CLIENTES ======== -->
+      <section class="tabsec" id="tab-clientes">
+        <div class="owner-hd"><div><h1>Mis clientes</h1><p id="clientCount">Restaurantes que gestionas con WOY.</p></div></div>
+        <div class="client-grid" id="clientGrid"></div>
+      </section>
+
+      <!-- ======== COBROS ======== -->
+      <section class="tabsec" id="tab-cobros">
+        <div class="owner-hd"><div><h1>Cobros</h1><p id="cobrosSub">Fechas de cobro y estado de pago del mes.</p></div></div>
+        <div class="pay-summary" id="paySummary"></div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="wtable" id="cobrosTable">
+              <thead><tr><th>Cliente</th><th>Plan</th><th>Tarifa</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="cobrosBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======== SOLICITUDES ======== -->
+      <section class="tabsec" id="tab-solicitudes">
+        <div class="owner-hd">
+          <div><h1>Solicitudes</h1><p>Artes, cambios y pedidos por cliente.</p></div>
+          <button class="pill-btn" id="newRequest"><i class="ti ti-plus"></i>Nueva solicitud</button>
+        </div>
+        <div class="req-board" id="reqBoard"></div>
+      </section>
     </main>
   </div>
 
-  <!-- Modal cliente -->
+  <!-- ===== Modal cliente ===== -->
   <div class="modal-scrim" id="clientModal">
-    <div class="modal">
+    <div class="modal wide">
       <div class="modal-hd">
         <h3 id="clientModalTitle">Nuevo cliente</h3>
         <button class="iconbtn" id="clientClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
       </div>
-      <div class="field"><label>Nombre del restaurante</label><input type="text" id="clName" placeholder="Ej. Café del Valle" /></div>
-      <div class="field">
-        <label>Enlace (se genera solo)</label>
-        <input type="text" id="clSlug" placeholder="cafe-del-valle" />
-        <p class="hint" style="margin:6px 0 0">Solo letras, números y guiones. Es la parte <code>?c=</code> del enlace.</p>
-      </div>
-      <div class="field">
-        <label id="clPassLabel">Contraseña de admin para el cliente</label>
-        <input type="text" id="clPass" placeholder="La que usará el restaurante para entrar a su panel" />
-        <p class="hint" style="margin:6px 0 0" id="clPassHint">El restaurante la usará para abrir su panel de administración.</p>
+      <div class="modal-scroll">
+        <p class="grp-lbl">Restaurante</p>
+        <div class="row2">
+          <div class="field"><label>Nombre del restaurante</label><input type="text" id="clName" placeholder="Ej. Café del Valle" /></div>
+          <div class="field">
+            <label>Enlace (se genera solo)</label>
+            <input type="text" id="clSlug" placeholder="cafe-del-valle" />
+          </div>
+        </div>
+        <div class="field">
+          <label id="clPassLabel">Contraseña de admin para el cliente</label>
+          <input type="text" id="clPass" placeholder="La que usará el restaurante para entrar a su panel" />
+          <p class="hint" id="clPassHint" style="margin:6px 0 0">El restaurante la usará para abrir su panel de administración.</p>
+        </div>
+
+        <p class="grp-lbl">Contacto</p>
+        <div class="row2">
+          <div class="field"><label>Persona de contacto</label><input type="text" id="clContact" placeholder="Ej. María Pérez" /></div>
+          <div class="field"><label>Teléfono / WhatsApp</label><input type="text" id="clPhone" placeholder="6000-0000" /></div>
+        </div>
+        <div class="field"><label>Correo</label><input type="text" id="clEmail" placeholder="correo@ejemplo.com" /></div>
+
+        <p class="grp-lbl">Plan y cobro</p>
+        <div class="row3">
+          <div class="field"><label>Plan</label><select id="clPlan"></select></div>
+          <div class="field"><label>Tarifa mensual ($)</label><input type="number" id="clFee" step="0.5" min="0" /></div>
+          <div class="field"><label>Estado</label>
+            <select id="clStatus">
+              <option value="activo">Activo</option>
+              <option value="prueba">En prueba</option>
+              <option value="moroso">Moroso</option>
+              <option value="suspendido">Suspendido</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Fecha de inicio</label><input type="date" id="clStart" /></div>
+          <div class="field"><label>Día de cobro (1–28)</label><input type="number" id="clBillDay" min="1" max="28" placeholder="1" /></div>
+        </div>
       </div>
       <div class="modal-ft">
         <button class="pill-btn ghost" id="clCancel" type="button">Cancelar</button>
@@ -72,9 +149,111 @@
     </div>
   </div>
 
+  <!-- ===== Modal registrar pago ===== -->
+  <div class="modal-scrim" id="payModal">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3>Registrar pago</h3>
+        <button class="iconbtn" id="payClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="pay-target" id="payTarget"></div>
+      <div class="row2">
+        <div class="field"><label>Período</label><input type="month" id="payPeriod" /></div>
+        <div class="field"><label>Monto ($)</label><input type="number" id="payAmount" step="0.5" min="0" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Fecha de pago</label><input type="date" id="payDate" /></div>
+        <div class="field"><label>Método</label>
+          <select id="payMethod">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Yappy">Yappy</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="pill-btn ghost" id="payCancel" type="button">Cancelar</button>
+        <button class="pill-btn" id="paySave" type="button"><i class="ti ti-check"></i>Registrar y generar recibo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal recibo / factura ===== -->
+  <div class="modal-scrim" id="invModal">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3>Recibo</h3>
+        <button class="iconbtn" id="invClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="receipt" id="receipt"></div>
+      <div class="modal-ft">
+        <button class="pill-btn ghost" id="invPrint" type="button"><i class="ti ti-printer"></i>Imprimir / PDF</button>
+        <button class="pill-btn" id="invDone" type="button">Listo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal solicitud ===== -->
+  <div class="modal-scrim" id="reqModal">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3 id="reqModalTitle">Nueva solicitud</h3>
+        <button class="iconbtn" id="reqClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="field"><label>Cliente</label><select id="reqClient"></select></div>
+      <div class="field"><label>Título</label><input type="text" id="reqTitle" placeholder="Ej. Arte para promo Día de la Madre" /></div>
+      <div class="row2">
+        <div class="field"><label>Tipo</label>
+          <select id="reqType">
+            <option value="arte">Arte / diseño</option>
+            <option value="cambio">Cambio en el menú</option>
+            <option value="cobro">Cobro / factura</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Fecha límite</label><input type="date" id="reqDue" /></div>
+      </div>
+      <div class="field"><label>Estado</label>
+        <select id="reqStatus">
+          <option value="pendiente">Pendiente</option>
+          <option value="proceso">En proceso</option>
+          <option value="entregado">Entregado</option>
+        </select>
+      </div>
+      <div class="modal-ft">
+        <button class="pill-btn ghost danger" id="reqDelete" type="button" hidden><i class="ti ti-trash"></i>Eliminar</button>
+        <span style="flex:1"></span>
+        <button class="pill-btn ghost" id="reqCancel" type="button">Cancelar</button>
+        <button class="pill-btn" id="reqSave" type="button">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal perfil WOY (datos del recibo) ===== -->
+  <div class="modal-scrim" id="bizModal">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3>Datos de facturación</h3>
+        <button class="iconbtn" id="bizClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+      <p class="hint" style="margin-bottom:12px">Estos datos salen en los recibos que generas.</p>
+      <div class="field"><label>Nombre / negocio</label><input type="text" id="bizName" placeholder="WOY Projects" /></div>
+      <div class="row2">
+        <div class="field"><label>Teléfono</label><input type="text" id="bizPhone" placeholder="6000-0000" /></div>
+        <div class="field"><label>Correo</label><input type="text" id="bizEmail" placeholder="hola@woy.app" /></div>
+      </div>
+      <div class="modal-ft">
+        <button class="pill-btn ghost" id="bizCancel" type="button">Cancelar</button>
+        <button class="pill-btn" id="bizSave" type="button"><i class="ti ti-device-floppy"></i>Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="atoast" id="atoast"></div>
 
-  <script src="assets/data.js?v=12"></script>
-  <script src="assets/owner.js?v=12"></script>
+  <script src="assets/data.js?v=13"></script>
+  <script src="assets/owner.js?v=13"></script>
 </body>
 </html>
