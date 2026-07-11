@@ -987,6 +987,14 @@
       try { sessionStorage.removeItem("woy_owner_ok"); } catch (e) {}
       location.reload();
     });
+
+    // Escape cierra el modal abierto (o el menú lateral en móvil)
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      var open = document.querySelector(".modal-scrim.is-open");
+      if (open) { open.classList.remove("is-open"); return; }
+      closeSide();
+    });
   }
 
   document.addEventListener("DOMContentLoaded", boot);
