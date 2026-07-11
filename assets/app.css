@@ -153,7 +153,7 @@
 /* ---------- Promo ---------- */
 .promo {
   margin: 6px 20px 4px;
-  padding: 16px 18px;
+  padding: 11px 16px;
   border-radius: var(--r-card);
   background: linear-gradient(
     120deg,
@@ -178,7 +178,7 @@
   border-radius: 50%;
 }
 .promo .pe {
-  font-size: 34px;
+  font-size: 26px;
   line-height: 1;
   z-index: 1;
 }
@@ -394,8 +394,11 @@
   border-radius: 16px;
   display: grid;
   place-items: center;
-  font-size: 64px;
-  background: var(--surface-2);
+  font-size: 62px;
+  background:
+    radial-gradient(circle at 50% 40%,
+      color-mix(in srgb, var(--accent) 9%, #fff) 0%,
+      var(--surface-2) 70%);
   overflow: hidden;
   position: relative;
 }
@@ -442,7 +445,8 @@
 }
 .dish .price {
   font-size: 15.5px;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--ink);
   letter-spacing: -0.01em;
 }
 .dish .price small {
@@ -598,7 +602,10 @@
   margin: 14px 18px 0;
   height: 300px;
   border-radius: var(--r-card);
-  background: var(--surface-2);
+  background:
+    radial-gradient(circle at 50% 38%,
+      color-mix(in srgb, var(--accent) 10%, #fff) 0%,
+      var(--surface-2) 68%);
   display: grid;
   place-items: center;
   font-size: 96px;
