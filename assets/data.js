@@ -721,6 +721,9 @@
   function save(data, tid) {
     if (tid === undefined) tid = tenantId();
     try {
+      // Sello de última modificación: alimenta el "rendimiento / actividad"
+      // de cada cliente en el panel del dueño.
+      try { data.updatedAt = new Date().toISOString(); } catch (e2) {}
       global.localStorage.setItem(keyFor(tid), JSON.stringify(data));
     } catch (e) {
       /* almacenamiento lleno o bloqueado: la beta sigue en memoria */

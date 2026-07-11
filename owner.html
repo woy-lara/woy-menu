@@ -8,9 +8,9 @@
   <meta name="theme-color" content="#191512" />
   <title>WOY Projects — Panel de control</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
-  <link rel="stylesheet" href="assets/tokens.css?v=13" />
-  <link rel="stylesheet" href="assets/admin.css?v=13" />
-  <link rel="stylesheet" href="assets/owner.css?v=13" />
+  <link rel="stylesheet" href="assets/tokens.css?v=14" />
+  <link rel="stylesheet" href="assets/admin.css?v=14" />
+  <link rel="stylesheet" href="assets/owner.css?v=14" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -27,71 +27,87 @@
   </div>
 
   <!-- Panel -->
-  <div class="owner-shell" id="ownerShell" hidden>
-    <header class="owner-top">
-      <div class="owner-brand">
-        <span class="ob-mark">🛠️</span>
-        <div><b>WOY Projects</b><small>Panel de control</small></div>
+  <div class="o-shell" id="ownerShell" hidden>
+    <div class="o-scrim" id="oScrim"></div>
+    <aside class="o-side" id="oSide">
+      <div class="o-brand"><span class="ob-mark">🛠️</span><div><b>WOY Projects</b><small>Panel de control</small></div></div>
+      <nav class="o-nav" id="ownerNav">
+        <button data-tab="dashboard" class="is-active"><i class="ti ti-layout-dashboard"></i><span>Panel</span></button>
+        <button data-tab="clientes"><i class="ti ti-building-store"></i><span>Clientes</span></button>
+        <button data-tab="cobros"><i class="ti ti-cash"></i><span>Cobros</span><span class="tab-dot" id="cobrosDot" hidden></span></button>
+        <button data-tab="solicitudes"><i class="ti ti-clipboard-list"></i><span>Solicitudes</span><span class="tab-dot" id="solDot" hidden></span></button>
+      </nav>
+      <div class="o-side-foot">
+        <button class="o-side-link" id="bizProfile" type="button"><i class="ti ti-settings"></i><span>Datos de facturación</span></button>
+        <button class="o-side-link" id="ownLogout" type="button"><i class="ti ti-logout"></i><span>Cerrar sesión</span></button>
       </div>
-      <div class="owner-actions">
+    </aside>
+
+    <main class="o-main">
+      <header class="o-top">
+        <button class="o-burger" id="oBurger" aria-label="Abrir menú"><i class="ti ti-menu-2"></i></button>
+        <b class="o-top-title" id="oTitle">Panel</b>
+        <span style="flex:1"></span>
         <button class="pill-btn" id="newClient"><i class="ti ti-plus"></i>Nuevo cliente</button>
-        <button class="iconbtn" id="bizProfile" aria-label="Datos de facturación" title="Datos de facturación"><i class="ti ti-settings"></i></button>
-        <button class="iconbtn" id="ownLogout" aria-label="Cerrar sesión" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
+      </header>
+
+      <div class="o-body">
+        <!-- ======== PANEL / DASHBOARD ======== -->
+        <section class="tabsec is-active" id="tab-dashboard">
+          <div class="dash-welcome" id="dashWelcome"></div>
+          <div class="dash-alerts" id="dashAlerts"></div>
+          <div class="kpi-row" id="kpiRow"></div>
+          <div class="dash-grid">
+            <div class="card">
+              <div class="card-hd"><h3>Ingresos · últimos 6 meses</h3></div>
+              <div id="revChart"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><h3>Solicitudes</h3><button class="linkbtn" data-goto="solicitudes">Ver todas</button></div>
+              <div id="reqSummary"></div>
+            </div>
+          </div>
+          <div class="dash-grid">
+            <div class="card">
+              <div class="card-hd"><h3>Actividad de clientes</h3><button class="linkbtn" data-goto="clientes">Ver clientes</button></div>
+              <div id="clientActivity"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><h3>Próximos cobros</h3><button class="linkbtn" data-goto="cobros">Ver todos</button></div>
+              <div id="dashCobros"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======== CLIENTES ======== -->
+        <section class="tabsec" id="tab-clientes">
+          <div class="owner-hd"><div><h1>Mis clientes</h1><p id="clientCount">Restaurantes que gestionas con WOY.</p></div></div>
+          <div class="client-grid" id="clientGrid"></div>
+        </section>
+
+        <!-- ======== COBROS ======== -->
+        <section class="tabsec" id="tab-cobros">
+          <div class="owner-hd"><div><h1>Cobros</h1><p>Fechas de cobro y estado de pago del mes.</p></div></div>
+          <div class="pay-summary" id="paySummary"></div>
+          <div class="card">
+            <div class="table-wrap">
+              <table class="wtable" id="cobrosTable">
+                <thead><tr><th>Cliente</th><th>Plan</th><th>Tarifa</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+                <tbody id="cobrosBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======== SOLICITUDES ======== -->
+        <section class="tabsec" id="tab-solicitudes">
+          <div class="owner-hd">
+            <div><h1>Solicitudes</h1><p>Artes, cambios y pedidos por cliente.</p></div>
+            <button class="pill-btn" id="newRequest"><i class="ti ti-plus"></i>Nueva solicitud</button>
+          </div>
+          <div class="req-board" id="reqBoard"></div>
+        </section>
       </div>
-    </header>
-
-    <nav class="owner-tabs" id="ownerTabs">
-      <button data-tab="dashboard" class="is-active"><i class="ti ti-layout-dashboard"></i>Panel</button>
-      <button data-tab="clientes"><i class="ti ti-building-store"></i>Clientes</button>
-      <button data-tab="cobros"><i class="ti ti-cash"></i>Cobros<span class="tab-dot" id="cobrosDot" hidden></span></button>
-      <button data-tab="solicitudes"><i class="ti ti-clipboard-list"></i>Solicitudes<span class="tab-dot" id="solDot" hidden></span></button>
-    </nav>
-
-    <main class="owner-main">
-      <!-- ======== PANEL / DASHBOARD ======== -->
-      <section class="tabsec is-active" id="tab-dashboard">
-        <div class="owner-hd"><div><h1>Panel</h1><p>Resumen de tu negocio de un vistazo.</p></div></div>
-        <div class="kpi-row" id="kpiRow"></div>
-        <div class="dash-cols">
-          <div class="card">
-            <div class="card-hd"><h3>Próximos cobros</h3><button class="linkbtn" data-goto="cobros">Ver todos</button></div>
-            <div id="dashCobros"></div>
-          </div>
-          <div class="card">
-            <div class="card-hd"><h3>Solicitudes pendientes</h3><button class="linkbtn" data-goto="solicitudes">Ver todas</button></div>
-            <div id="dashSol"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ======== CLIENTES ======== -->
-      <section class="tabsec" id="tab-clientes">
-        <div class="owner-hd"><div><h1>Mis clientes</h1><p id="clientCount">Restaurantes que gestionas con WOY.</p></div></div>
-        <div class="client-grid" id="clientGrid"></div>
-      </section>
-
-      <!-- ======== COBROS ======== -->
-      <section class="tabsec" id="tab-cobros">
-        <div class="owner-hd"><div><h1>Cobros</h1><p id="cobrosSub">Fechas de cobro y estado de pago del mes.</p></div></div>
-        <div class="pay-summary" id="paySummary"></div>
-        <div class="card">
-          <div class="table-wrap">
-            <table class="wtable" id="cobrosTable">
-              <thead><tr><th>Cliente</th><th>Plan</th><th>Tarifa</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
-              <tbody id="cobrosBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ======== SOLICITUDES ======== -->
-      <section class="tabsec" id="tab-solicitudes">
-        <div class="owner-hd">
-          <div><h1>Solicitudes</h1><p>Artes, cambios y pedidos por cliente.</p></div>
-          <button class="pill-btn" id="newRequest"><i class="ti ti-plus"></i>Nueva solicitud</button>
-        </div>
-        <div class="req-board" id="reqBoard"></div>
-      </section>
     </main>
   </div>
 
@@ -253,7 +269,7 @@
 
   <div class="atoast" id="atoast"></div>
 
-  <script src="assets/data.js?v=13"></script>
-  <script src="assets/owner.js?v=13"></script>
+  <script src="assets/data.js?v=14"></script>
+  <script src="assets/owner.js?v=14"></script>
 </body>
 </html>

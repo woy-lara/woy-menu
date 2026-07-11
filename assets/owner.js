@@ -181,45 +181,172 @@
     window.WOY.saveClients(list);
   }
 
-  /* ---------- Pestañas ---------- */
+  /* ---------- Navegación (lateral) ---------- */
+  var TAB_TITLES = { dashboard: "Panel", clientes: "Clientes", cobros: "Cobros", solicitudes: "Solicitudes" };
   function showTab(name) {
-    $("ownerTabs").querySelectorAll("button").forEach(function (b) {
+    $("ownerNav").querySelectorAll("button").forEach(function (b) {
       b.classList.toggle("is-active", b.getAttribute("data-tab") === name);
     });
     document.querySelectorAll(".tabsec").forEach(function (s) {
       s.classList.toggle("is-active", s.id === "tab-" + name);
     });
+    if ($("oTitle")) $("oTitle").textContent = TAB_TITLES[name] || "Panel";
+    closeSide();
     if (name === "dashboard") renderDashboard();
     if (name === "clientes") renderClients();
     if (name === "cobros") renderCobros();
     if (name === "solicitudes") renderRequests();
   }
+  function openSide() { $("oSide").classList.add("open"); $("oScrim").classList.add("show"); }
+  function closeSide() { $("oSide").classList.remove("open"); $("oScrim").classList.remove("show"); }
 
   /* ---------- Dashboard ---------- */
+  function todayLabel() {
+    var d = new Date();
+    var dias = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+    return dias[d.getDay()] + ", " + d.getDate() + " de " + MONTHS[d.getMonth()] + " de " + d.getFullYear();
+  }
+  function lastUpdatedISO(c) {
+    try {
+      var raw = localStorage.getItem(window.WOY.keyFor(c.isDefault ? null : c.slug));
+      return raw ? (JSON.parse(raw).updatedAt || null) : null;
+    } catch (e) { return null; }
+  }
+  function relTime(iso) {
+    if (!iso) return null;
+    var diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+    if (diff <= 0) return "hoy";
+    if (diff === 1) return "ayer";
+    if (diff < 7) return "hace " + diff + " días";
+    if (diff < 30) return "hace " + Math.floor(diff / 7) + " sem";
+    if (diff < 365) return "hace " + Math.floor(diff / 30) + " meses";
+    return "hace más de un año";
+  }
+  function monthsBackKeys(n) {
+    var out = [], d = new Date();
+    for (var i = n - 1; i >= 0; i--) {
+      var m = new Date(d.getFullYear(), d.getMonth() - i, 1);
+      out.push({ key: m.getFullYear() + "-" + pad(m.getMonth() + 1), label: MONTHS[m.getMonth()].slice(0, 3) });
+    }
+    return out;
+  }
+
   function renderDashboard() {
     var list = allClients();
-    var mrr = 0, porCobrar = 0, vencidos = 0, activos = 0;
+
+    /* --- Bienvenida + acciones rápidas --- */
+    $("dashWelcome").innerHTML =
+      '<div><h1>Hola, Lara 👋</h1><p>' + todayLabel() + " · esto es lo que pasa en WOY hoy.</p></div>" +
+      '<div class="dw-acts">' +
+      '<button class="pill-btn ghost" data-act="cliente"><i class="ti ti-plus"></i>Nuevo cliente</button>' +
+      '<button class="pill-btn" data-act="solicitud"><i class="ti ti-clipboard-plus"></i>Nueva solicitud</button></div>';
+    $("dashWelcome").querySelector('[data-act="cliente"]').addEventListener("click", function () { openClient(null); });
+    $("dashWelcome").querySelector('[data-act="solicitud"]').addEventListener("click", function () { openRequest(null, null); });
+
+    /* --- Necesita tu atención (alertas accionables) --- */
+    var vencidos = list.filter(function (c) { return billable(c) && billing(c).state === "vencido"; });
+    var venceSem = list.filter(function (c) { var b = billing(c); return billable(c) && !b.paid && b.dleft >= 0 && b.dleft <= 7; });
+    var reqAll = flatRequests(list);
+    var reqLate = reqAll.filter(function (r) { return r.status !== "entregado" && r.due && daysUntil(r.due) < 0; });
+    var enPrueba = list.filter(function (c) { return c.status === "prueba"; });
+    var sinPass = list.filter(function (c) { return !c.passHash; });
+    var alerts = [
+      { n: vencidos.length, ic: "ti-alert-triangle", tone: "red", lbl: vencidos.length === 1 ? "cobro vencido" : "cobros vencidos", go: "cobros" },
+      { n: venceSem.length, ic: "ti-calendar-due", tone: "amber", lbl: "vence" + (venceSem.length === 1 ? "" : "n") + " esta semana", go: "cobros" },
+      { n: reqLate.length, ic: "ti-clipboard-x", tone: "red", lbl: "solicitud" + (reqLate.length === 1 ? "" : "es") + " atrasada" + (reqLate.length === 1 ? "" : "s"), go: "solicitudes" },
+      { n: enPrueba.length, ic: "ti-rosette", tone: "blue", lbl: "en prueba · por convertir", go: "clientes" },
+      { n: sinPass.length, ic: "ti-lock-open", tone: "amber", lbl: "sin contraseña", go: "clientes" }
+    ].filter(function (a) { return a.n > 0; });
+    $("dashAlerts").innerHTML = alerts.length
+      ? '<div class="al-hd"><i class="ti ti-bell-ringing"></i>Necesita tu atención</div><div class="al-row">' +
+        alerts.map(function (a) {
+          return '<button class="al-card ' + a.tone + '" data-goto="' + a.go + '"><span class="al-n">' + a.n + "</span>" +
+            '<span class="al-tx"><i class="ti ' + a.ic + '"></i>' + esc(a.lbl) + "</span></button>";
+        }).join("") + "</div>"
+      : '<div class="al-clear"><i class="ti ti-circle-check"></i>Todo en orden — sin cobros vencidos ni solicitudes atrasadas.</div>';
+    $("dashAlerts").querySelectorAll("[data-goto]").forEach(function (b) {
+      b.addEventListener("click", function () { showTab(b.getAttribute("data-goto")); });
+    });
+
+    /* --- Resumen (KPIs) --- */
+    var mrr = 0, porCobrar = 0, activos = 0, reqOpen = 0;
     list.forEach(function (c) {
       if (c.status === "activo") activos++;
       if (c.status === "activo" || c.status === "moroso") mrr += (+c.fee || 0);
-      if (billable(c)) {
-        var b = billing(c);
-        if (!b.paid) porCobrar += (+c.fee || 0);
-        if (b.state === "vencido") vencidos++;
-      }
+      if (billable(c) && !billing(c).paid) porCobrar += (+c.fee || 0);
     });
+    reqOpen = reqAll.filter(function (r) { return r.status !== "entregado"; }).length;
     var kpis = [
+      { ic: "ti-chart-line", n: money(mrr), lbl: "Ingreso mensual (MRR)", cls: "" },
       { ic: "ti-building-store", n: activos, lbl: "Clientes activos", cls: "" },
-      { ic: "ti-chart-line", n: money(mrr), lbl: "Ingreso mensual", cls: "" },
       { ic: "ti-clock-dollar", n: money(porCobrar), lbl: "Por cobrar este mes", cls: porCobrar > 0 ? "amber" : "" },
-      { ic: "ti-alert-triangle", n: vencidos, lbl: "Cobros vencidos", cls: vencidos > 0 ? "red" : "" }
+      { ic: "ti-clipboard-list", n: reqOpen, lbl: "Solicitudes abiertas", cls: "" }
     ];
     $("kpiRow").innerHTML = kpis.map(function (k) {
       return '<div class="kpi ' + k.cls + '"><span class="kpi-ic"><i class="ti ' + k.ic + '"></i></span>' +
-        '<b>' + k.n + "</b><small>" + k.lbl + "</small></div>";
+        "<b>" + k.n + "</b><small>" + k.lbl + "</small></div>";
     }).join("");
 
-    // Próximos cobros (billables no pagados, por fecha)
+    /* --- Ingresos últimos 6 meses (barras) --- */
+    var months = monthsBackKeys(6), rev = {}, maxRev = 0;
+    months.forEach(function (m) { rev[m.key] = 0; });
+    list.forEach(function (c) {
+      (c.payments || []).forEach(function (p) {
+        var mk = (p.date || "").slice(0, 7);
+        if (rev[mk] != null) rev[mk] += (+p.amount || 0);
+      });
+    });
+    months.forEach(function (m) { if (rev[m.key] > maxRev) maxRev = rev[m.key]; });
+    $("revChart").innerHTML = maxRev > 0
+      ? '<div class="rev-bars">' + months.map(function (m) {
+          var v = rev[m.key], h = Math.round((v / maxRev) * 100);
+          return '<div class="rev-col"><span class="rev-val">' + (v ? money(v).replace(".00", "") : "") + "</span>" +
+            '<span class="rev-bar" style="height:' + Math.max(h, 2) + '%"></span>' +
+            '<span class="rev-lbl">' + m.label + "</span></div>";
+        }).join("") + "</div>"
+      : '<div class="mini-empty">Aún no hay pagos registrados. Cuando cobres, aquí verás tus ingresos por mes.</div>';
+
+    /* --- Solicitudes (pipeline + próximas) --- */
+    var byStatus = { pendiente: 0, proceso: 0, entregado: 0 };
+    reqAll.forEach(function (r) { byStatus[r.status] = (byStatus[r.status] || 0) + 1; });
+    var nextReqs = reqAll.filter(function (r) { return r.status !== "entregado"; })
+      .sort(function (a, b) { return (a.due || "9999") < (b.due || "9999") ? -1 : 1; }).slice(0, 4);
+    $("reqSummary").innerHTML =
+      '<div class="pipe">' +
+      '<div class="pipe-c pend"><b>' + byStatus.pendiente + "</b><small>Pendiente</small></div>" +
+      '<div class="pipe-c proc"><b>' + byStatus.proceso + "</b><small>En proceso</small></div>" +
+      '<div class="pipe-c done"><b>' + byStatus.entregado + "</b><small>Entregado</small></div></div>" +
+      (nextReqs.length
+        ? nextReqs.map(function (r) {
+            var late = r.due && daysUntil(r.due) < 0;
+            return '<div class="mini-row" data-req="' + esc(r._slug) + "|" + esc(r.id) + '">' +
+              '<span class="req-ic ' + r.type + '"><i class="ti ' + reqIcon(r.type) + '"></i></span>' +
+              '<span class="mini-main"><b>' + esc(r.title) + "</b><small>" + esc(r._client) + "</small></span>" +
+              '<span class="due-tag ' + (late ? "d-bad" : "d-mut") + '">' + (r.due ? fmtDate(r.due) : "sin fecha") + "</span></div>";
+          }).join("")
+        : '<div class="mini-empty">No hay solicitudes abiertas.</div>');
+    $("reqSummary").querySelectorAll("[data-req]").forEach(function (r) {
+      r.addEventListener("click", function () { var p = r.getAttribute("data-req").split("|"); openRequest(p[0], p[1]); });
+    });
+
+    /* --- Actividad de clientes (rendimiento / modificaciones) --- */
+    var rows = list.map(function (c) {
+      return { c: c, upd: lastUpdatedISO(c), dishes: dishCount(c.isDefault ? null : c.slug) };
+    }).sort(function (a, b) { return (b.upd || "") < (a.upd || "") ? -1 : 1; });
+    $("clientActivity").innerHTML = '<div class="act-list">' + rows.map(function (row) {
+      var c = row.c, st = STATUS[c.status] || STATUS.activo;
+      var rel = relTime(row.upd);
+      return '<div class="act-row" data-edit="' + esc(c.isDefault ? "" : c.slug) + '">' +
+        '<span class="mini-emoji">' + esc(c.emoji || "🍽️") + "</span>" +
+        '<span class="act-main"><b>' + esc(c.name) + "</b><small>" + row.dishes + " platos · " +
+        (rel ? "editado " + rel : "sin actividad local") + "</small></span>" +
+        '<span class="st-badge ' + st.cls + '">' + st.label + "</span></div>";
+    }).join("") + "</div>";
+    $("clientActivity").querySelectorAll("[data-edit]").forEach(function (r) {
+      r.addEventListener("click", function () { openClient(r.getAttribute("data-edit")); });
+    });
+
+    /* --- Próximos cobros --- */
     var due = list.filter(function (c) { return billable(c) && !billing(c).paid; })
       .sort(function (a, b) { return billing(a).dleft - billing(b).dleft; }).slice(0, 6);
     $("dashCobros").innerHTML = due.length ? due.map(function (c) {
@@ -231,23 +358,6 @@
     }).join("") : '<div class="mini-empty">Todo cobrado este mes 🎉</div>';
     $("dashCobros").querySelectorAll("[data-pay]").forEach(function (r) {
       r.addEventListener("click", function () { openPay(r.getAttribute("data-pay")); });
-    });
-
-    // Solicitudes pendientes
-    var reqs = flatRequests(list).filter(function (r) { return r.status !== "entregado"; })
-      .sort(function (a, b) { return (a.due || "9999") < (b.due || "9999") ? -1 : 1; }).slice(0, 6);
-    $("dashSol").innerHTML = reqs.length ? reqs.map(function (r) {
-      return '<div class="mini-row" data-req="' + esc(r._slug) + '|' + esc(r.id) + '">' +
-        '<span class="req-ic ' + r.type + '"><i class="ti ' + reqIcon(r.type) + '"></i></span>' +
-        '<span class="mini-main"><b>' + esc(r.title) + "</b><small>" + esc(r._client) + "</small></span>" +
-        '<span class="due-tag ' + (r.due && daysUntil(r.due) < 0 ? "d-bad" : "d-mut") + '">' +
-        (r.due ? fmtDate(r.due) : "sin fecha") + "</span></div>";
-    }).join("") : '<div class="mini-empty">No hay solicitudes pendientes.</div>';
-    $("dashSol").querySelectorAll("[data-req]").forEach(function (r) {
-      r.addEventListener("click", function () {
-        var parts = r.getAttribute("data-req").split("|");
-        openRequest(parts[0], parts[1]);
-      });
     });
 
     refreshDots(list);
@@ -725,12 +835,14 @@
       showTab("dashboard");
     });
 
-    $("ownerTabs").querySelectorAll("button").forEach(function (b) {
+    $("ownerNav").querySelectorAll("button").forEach(function (b) {
       b.addEventListener("click", function () { showTab(b.getAttribute("data-tab")); });
     });
-    document.querySelectorAll("[data-goto]").forEach(function (b) {
+    document.querySelectorAll(".card-hd [data-goto]").forEach(function (b) {
       b.addEventListener("click", function () { showTab(b.getAttribute("data-goto")); });
     });
+    $("oBurger").addEventListener("click", openSide);
+    $("oScrim").addEventListener("click", closeSide);
 
     $("newClient").addEventListener("click", function () { openClient(null); });
     $("clientClose").addEventListener("click", closeClient);
