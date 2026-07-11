@@ -583,3 +583,29 @@ body.owner {
 }
 .lk:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 .lk .ti { font-size: 14px; }
+
+/* ---------- Foto del local + logo + contacto (v17) ---------- */
+.cc-banner.has-photo { background-size: cover; background-position: center; }
+.cc-banner .cc-logo { overflow: hidden; }
+.cc-banner .cc-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.cc-contact { display: flex; gap: 6px; flex-wrap: wrap; }
+.cc-contact .lk { background: var(--surface-2); }
+
+.banner-prev {
+  aspect-ratio: 16 / 6; border-radius: 12px; background: var(--surface-2);
+  border: 1px dashed var(--line-2); background-size: cover; background-position: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; color: var(--ink-3); font-size: 12.5px;
+}
+.banner-prev .ti { font-size: 26px; }
+.banner-prev.has { border-style: solid; }
+.banner-prev.has .ti, .banner-prev.has span { display: none; }
+.img-acts { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.logo-row { display: flex; align-items: center; gap: 14px; }
+.logo-prev {
+  width: 60px; height: 60px; border-radius: 14px; background: var(--surface-2);
+  display: grid; place-items: center; font-size: 30px; overflow: hidden; flex: 0 0 auto;
+}
+.logo-prev img { width: 100%; height: 100%; object-fit: cover; }
+.logo-row .img-acts { margin-top: 0; }

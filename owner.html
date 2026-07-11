@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="assets/tokens.css?v=14" />
   <link rel="stylesheet" href="assets/admin.css?v=14" />
-  <link rel="stylesheet" href="assets/owner.css?v=16" />
+  <link rel="stylesheet" href="assets/owner.css?v=17" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -131,6 +131,29 @@
           <label id="clPassLabel">Contraseña de admin para el cliente</label>
           <input type="text" id="clPass" placeholder="La que usará el restaurante para entrar a su panel" />
           <p class="hint" id="clPassHint" style="margin:6px 0 0">El restaurante la usará para abrir su panel de administración.</p>
+        </div>
+
+        <p class="grp-lbl">Imagen del local</p>
+        <div class="field">
+          <label>Foto del local <span style="color:var(--ink-3);font-weight:400">(banner de la tarjeta)</span></label>
+          <div class="banner-prev" id="clBannerPrev"><i class="ti ti-photo"></i><span>Sin foto</span></div>
+          <div class="img-acts">
+            <button class="pill-btn ghost" id="clBannerPick" type="button"><i class="ti ti-upload"></i>Subir foto</button>
+            <button class="add-line" id="clBannerClear" type="button" hidden><i class="ti ti-trash"></i>Quitar</button>
+            <input type="file" id="clBannerFile" accept="image/*" hidden />
+          </div>
+        </div>
+        <div class="field">
+          <label>Logo</label>
+          <div class="logo-row">
+            <div class="logo-prev" id="clLogoPrev">🍽️</div>
+            <div class="img-acts">
+              <button class="pill-btn ghost" id="clLogoPick" type="button"><i class="ti ti-upload"></i>Subir logo</button>
+              <button class="add-line" id="clLogoClear" type="button" hidden><i class="ti ti-trash"></i>Quitar</button>
+              <input type="file" id="clLogoFile" accept="image/*" hidden />
+            </div>
+          </div>
+          <p class="hint" style="margin:6px 0 0">Si no subes logo, se usa el emoji del restaurante.</p>
         </div>
 
         <p class="grp-lbl">Contacto</p>
@@ -285,6 +308,6 @@
   <div class="atoast" id="atoast"></div>
 
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/owner.js?v=16"></script>
+  <script src="assets/owner.js?v=17"></script>
 </body>
 </html>

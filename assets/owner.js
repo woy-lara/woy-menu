@@ -406,8 +406,11 @@
           : '<span class="' + (b.state === "vencido" ? "bad" : "mut") + '"><i class="ti ti-calendar-due"></i>' +
             (b.state === "vencido" ? "Venció " + fmtDate(b.due) : "Cobra " + fmtDate(b.due)) + "</span>");
       return '<div class="client-card' + (isDef ? " is-default" : "") + '">' +
-        '<div class="cc-banner" style="--cbg:' + clientAccent(c) + '">' +
-          '<span class="cc-logo">' + esc(c.emoji || "🍽️") + "</span>" +
+        '<div class="cc-banner' + (c.bannerImg ? " has-photo" : "") + '" style="' +
+          (c.bannerImg
+            ? "background-image:linear-gradient(120deg,rgba(20,12,8,.58),rgba(20,12,8,.25)),url(" + c.bannerImg + ")"
+            : "--cbg:" + clientAccent(c)) + '">' +
+          '<span class="cc-logo">' + (c.logoImg ? '<img src="' + esc(c.logoImg) + '" alt="">' : esc(c.emoji || "🍽️")) + "</span>" +
           '<div class="cc-id"><b>' + esc(c.name) + "</b>" +
           "<small>" + (isDef ? '<span class="cc-tag">Principal</span> Menú publicado' : "?c=" + esc(c.slug)) + "</small></div>" +
           '<span class="st-badge ' + st.cls + '">' + st.label + "</span></div>" +
@@ -417,6 +420,11 @@
           '<div class="cc-stat"><span><i class="ti ti-tools-kitchen-2"></i>' + n + " platos</span>" +
           '<span class="' + (c.passHash ? "ok" : "warn") + '"><i class="ti ti-' + (c.passHash ? "lock" : "lock-open") + '"></i>' +
           (c.passHash ? "Con contraseña" : "Sin contraseña") + "</span></div>" +
+          ((c.phone || c.email) ? '<div class="cc-contact">' +
+            (c.phone ? '<a class="lk" href="tel:' + esc((c.phone || "").replace(/[^0-9+]/g, "")) + '"><i class="ti ti-phone"></i>Llamar</a>' : "") +
+            (c.phone ? '<a class="lk" href="https://wa.me/' + esc((c.phone || "").replace(/[^0-9]/g, "")) + '" target="_blank" rel="noopener"><i class="ti ti-brand-whatsapp"></i>WhatsApp</a>' : "") +
+            (c.email ? '<a class="lk" href="mailto:' + esc(c.email) + '"><i class="ti ti-mail"></i>Correo</a>' : "") +
+            "</div>" : "") +
           '<div class="cc-links">' +
           linkRow(menuUrl, "Menú del cliente", "ti-tools-kitchen-2") +
           linkRow(admUrl, "Panel del restaurante", "ti-tools") + "</div>" +
@@ -479,6 +487,48 @@
 
   /* ---------- Modal cliente ---------- */
   var editingSlug = null; // null = nuevo; "" = principal; "slug" = cliente
+  var editBanner = null, editLogo = null, editEmoji = "🍽️";
+
+  // Redimensiona/comprime a JPEG para cuidar el almacenamiento del navegador
+  function compressImage(file, max, cb) {
+    var r = new FileReader();
+    r.onload = function (ev) {
+      var im = new Image();
+      im.onload = function () {
+        var w = im.width, h = im.height;
+        if (w > max || h > max) { var k = Math.min(max / w, max / h); w = Math.round(w * k); h = Math.round(h * k); }
+        var cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(im, 0, 0, w, h);
+        cb(cv.toDataURL("image/jpeg", 0.82));
+      };
+      im.src = ev.target.result;
+    };
+    r.readAsDataURL(file);
+  }
+  function renderClImages() {
+    var bp = $("clBannerPrev");
+    if (editBanner) { bp.style.backgroundImage = "url(" + editBanner + ")"; bp.classList.add("has"); bp.innerHTML = ""; }
+    else { bp.style.backgroundImage = ""; bp.classList.remove("has"); bp.innerHTML = '<i class="ti ti-photo"></i><span>Sin foto</span>'; }
+    $("clBannerClear").hidden = !editBanner;
+    var lp = $("clLogoPrev");
+    lp.innerHTML = editLogo ? '<img src="' + esc(editLogo) + '" alt="">' : esc(editEmoji || "🍽️");
+    $("clLogoClear").hidden = !editLogo;
+  }
+  function initClientImages() {
+    $("clBannerPick").addEventListener("click", function () { $("clBannerFile").click(); });
+    $("clBannerFile").addEventListener("change", function (e) {
+      var f = e.target.files[0]; e.target.value = "";
+      if (f) compressImage(f, 1400, function (url) { editBanner = url; renderClImages(); });
+    });
+    $("clBannerClear").addEventListener("click", function () { editBanner = null; renderClImages(); });
+    $("clLogoPick").addEventListener("click", function () { $("clLogoFile").click(); });
+    $("clLogoFile").addEventListener("change", function (e) {
+      var f = e.target.files[0]; e.target.value = "";
+      if (f) compressImage(f, 400, function (url) { editLogo = url; renderClImages(); });
+    });
+    $("clLogoClear").addEventListener("click", function () { editLogo = null; renderClImages(); });
+  }
   function fillPlanSelect() {
     $("clPlan").innerHTML = PLANS.map(function (p) {
       return '<option value="' + p.id + '">' + esc(p.name) + " (" + money(p.fee) + ")</option>";
@@ -506,6 +556,10 @@
     $("clStatus").value = c ? c.status : "activo";
     $("clStart").value = c ? c.startDate : todayISO();
     $("clBillDay").value = c ? c.billingDay : 1;
+    editBanner = c && c.bannerImg ? c.bannerImg : null;
+    editLogo = c && c.logoImg ? c.logoImg : null;
+    editEmoji = (c && c.emoji) || "🍽️";
+    renderClImages();
     $("clientModal").classList.add("is-open");
     $("clName").focus();
   }
@@ -533,7 +587,9 @@
       fee: parseFloat($("clFee").value) || 0,
       status: $("clStatus").value,
       startDate: $("clStart").value || todayISO(),
-      billingDay: Math.min(Math.max(parseInt($("clBillDay").value, 10) || 1, 1), 28)
+      billingDay: Math.min(Math.max(parseInt($("clBillDay").value, 10) || 1, 1), 28),
+      bannerImg: editBanner || "",
+      logoImg: editLogo || ""
     };
 
     function persist(passHash) {
@@ -898,6 +954,7 @@
       if (editingSlug === null) $("clSlug").value = slugify($("clName").value);
     });
     $("clPlan").addEventListener("change", function () { $("clFee").value = planFee($("clPlan").value); });
+    initClientImages();
 
     $("payClose").addEventListener("click", closePay);
     $("payCancel").addEventListener("click", closePay);
