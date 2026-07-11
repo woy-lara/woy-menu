@@ -406,25 +406,28 @@
           : '<span class="' + (b.state === "vencido" ? "bad" : "mut") + '"><i class="ti ti-calendar-due"></i>' +
             (b.state === "vencido" ? "Venció " + fmtDate(b.due) : "Cobra " + fmtDate(b.due)) + "</span>");
       return '<div class="client-card' + (isDef ? " is-default" : "") + '">' +
-        '<div class="cc-head"><span class="cc-logo">' + esc(c.emoji || "🍽️") + "</span>" +
-        '<div class="cc-id"><b>' + esc(c.name) + (isDef ? ' <span class="cc-badge">Principal</span>' : "") + "</b>" +
-        "<small>" + (isDef ? "Menú publicado" : "?c=" + esc(c.slug)) + "</small></div>" +
-        '<span class="st-badge ' + st.cls + '">' + st.label + "</span></div>" +
-        '<div class="cc-meta"><span class="plan-chip">' + planName(c.plan) + "</span>" +
-        '<span>' + money(c.fee) + '/mes</span><span class="cc-sep">·</span>' + payLine + "</div>" +
-        '<div class="cc-stat"><span><i class="ti ti-tools-kitchen-2"></i>' + n + " platos</span>" +
-        '<span class="' + (c.passHash ? "ok" : "warn") + '"><i class="ti ti-' + (c.passHash ? "lock" : "lock-open") + '"></i>' +
-        (c.passHash ? "Con contraseña" : "Sin contraseña") + "</span></div>" +
-        '<div class="cc-links">' +
-        ccLink(menuUrl, "Enlace del menú") + ccLink(admUrl, "Enlace del panel") + "</div>" +
-        '<div class="cc-foot">' +
-        (billable(c) && !b.paid
-          ? '<button class="pill-btn sm" data-pay="' + esc(slug) + '"><i class="ti ti-cash"></i>Registrar pago</button>'
-          : '<button class="pill-btn ghost sm" data-hist="' + esc(slug) + '"><i class="ti ti-receipt"></i>Recibos</button>') +
-        '<span style="flex:1"></span>' +
-        '<button class="pill-btn ghost sm" data-edit="' + esc(slug) + '"><i class="ti ti-pencil"></i>Editar</button>' +
-        (isDef ? "" : '<button class="pill-btn ghost sm danger" data-del="' + esc(slug) + '"><i class="ti ti-trash"></i></button>') +
-        "</div></div>";
+        '<div class="cc-banner" style="--cbg:' + clientAccent(c) + '">' +
+          '<span class="cc-logo">' + esc(c.emoji || "🍽️") + "</span>" +
+          '<div class="cc-id"><b>' + esc(c.name) + "</b>" +
+          "<small>" + (isDef ? '<span class="cc-tag">Principal</span> Menú publicado' : "?c=" + esc(c.slug)) + "</small></div>" +
+          '<span class="st-badge ' + st.cls + '">' + st.label + "</span></div>" +
+        '<div class="cc-body">' +
+          '<div class="cc-meta"><span class="plan-chip">' + planName(c.plan) + "</span>" +
+          '<span>' + money(c.fee) + '/mes</span><span class="cc-sep">·</span>' + payLine + "</div>" +
+          '<div class="cc-stat"><span><i class="ti ti-tools-kitchen-2"></i>' + n + " platos</span>" +
+          '<span class="' + (c.passHash ? "ok" : "warn") + '"><i class="ti ti-' + (c.passHash ? "lock" : "lock-open") + '"></i>' +
+          (c.passHash ? "Con contraseña" : "Sin contraseña") + "</span></div>" +
+          '<div class="cc-links">' +
+          linkRow(menuUrl, "Menú del cliente", "ti-tools-kitchen-2") +
+          linkRow(admUrl, "Panel del restaurante", "ti-tools") + "</div>" +
+          '<div class="cc-foot">' +
+          (billable(c) && !b.paid
+            ? '<button class="pill-btn sm" data-pay="' + esc(slug) + '"><i class="ti ti-cash"></i>Registrar pago</button>'
+            : '<button class="pill-btn ghost sm" data-hist="' + esc(slug) + '"><i class="ti ti-receipt"></i>Recibos</button>') +
+          '<span style="flex:1"></span>' +
+          '<button class="pill-btn ghost sm" data-edit="' + esc(slug) + '"><i class="ti ti-pencil"></i>Editar</button>' +
+          (isDef ? "" : '<button class="pill-btn ghost sm danger" data-del="' + esc(slug) + '"><i class="ti ti-trash"></i></button>') +
+          "</div></div></div>";
     }).join("");
 
     grid.querySelectorAll("[data-copy]").forEach(function (b) {
@@ -442,12 +445,36 @@
     grid.querySelectorAll("[data-hist]").forEach(function (b) {
       b.addEventListener("click", function () { openHistory(b.getAttribute("data-hist")); });
     });
+    grid.querySelectorAll("[data-send]").forEach(function (b) {
+      b.addEventListener("click", function () { sendLink(b.getAttribute("data-send"), b.getAttribute("data-lbl")); });
+    });
     refreshDots(list);
   }
-  function ccLink(url, label) {
-    return '<div class="cc-link"><span>' + esc(url) + "</span>" +
-      '<button class="iconbtn" data-copy="' + esc(url) + '" data-lbl="' + esc(label) + '" aria-label="Copiar"><i class="ti ti-copy"></i></button>' +
-      '<a class="iconbtn" href="' + esc(url) + '" target="_blank" rel="noopener" aria-label="Abrir"><i class="ti ti-external-link"></i></a></div>';
+  // Color de marca de cada cliente (para el banner de su tarjeta)
+  function clientAccent(c) {
+    try {
+      var raw = localStorage.getItem(window.WOY.keyFor(c.isDefault ? null : c.slug));
+      if (raw) { var t = JSON.parse(raw).theme; if (t && t.accent) return t.accent; }
+    } catch (e) {}
+    return c.isDefault ? "#4a5d3a" : "#c2410c";
+  }
+  // Fila de enlace con etiqueta clara + acciones Abrir / Copiar / Enviar
+  function linkRow(url, label, icon) {
+    return '<div class="cc-linkrow">' +
+      '<span class="cc-linklabel"><i class="ti ' + icon + '"></i>' + esc(label) + "</span>" +
+      '<div class="cc-linkacts">' +
+      '<a class="lk" href="' + esc(url) + '" target="_blank" rel="noopener"><i class="ti ti-external-link"></i>Abrir</a>' +
+      '<button class="lk" data-copy="' + esc(url) + '" data-lbl="' + esc(label) + '"><i class="ti ti-copy"></i>Copiar</button>' +
+      '<button class="lk" data-send="' + esc(url) + '" data-lbl="' + esc(label) + '"><i class="ti ti-send"></i>Enviar</button>' +
+      "</div></div>";
+  }
+  // Enviar el enlace: hoja de compartir del sistema o WhatsApp (el usuario decide y envía)
+  function sendLink(url, label) {
+    var text = (label ? label + ": " : "") + url;
+    try {
+      if (navigator.share) { navigator.share({ title: "WOY Projects", text: label || "Enlace", url: url }).catch(function () {}); return; }
+    } catch (e) {}
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
   }
 
   /* ---------- Modal cliente ---------- */
