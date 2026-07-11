@@ -534,6 +534,9 @@
     $("dishModal").addEventListener("click", function (e) {
       if (e.target === $("dishModal")) closeDish();
     });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && $("dishModal").classList.contains("is-open")) closeDish();
+    });
     $("addSize").addEventListener("click", function () { $("sizesRep").appendChild(sizeRow()); });
     $("addMod").addEventListener("click", function () { $("modsRep").appendChild(modRow()); });
     $("addIng").addEventListener("click", function () { $("ingsRep").appendChild(ingRow()); });
