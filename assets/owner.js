@@ -662,9 +662,9 @@
       var action = b.paid
         ? '<button class="iconbtn" data-rcpt="' + esc(c.slug) + "|" + esc(b.pay.id) + '" aria-label="Ver recibo"><i class="ti ti-receipt"></i></button>'
         : '<button class="pill-btn sm" data-pay="' + esc(c.slug) + '"><i class="ti ti-cash"></i>Cobrar</button>';
-      return "<tr><td><div class='t-client'><span>" + esc(c.emoji || "🍽️") + "</span>" + esc(c.name) + "</div></td>" +
-        "<td>" + planName(c.plan) + "</td><td>" + money(c.fee) + "</td>" +
-        "<td>" + fmtDate(b.due) + "</td><td>" + stateHtml + "</td>" +
+      return "<tr><td class='t-clientcell'><div class='t-client'><span>" + esc(c.emoji || "🍽️") + "</span>" + esc(c.name) + "</div></td>" +
+        "<td data-label='Plan'>" + planName(c.plan) + "</td><td data-label='Tarifa'>" + money(c.fee) + "</td>" +
+        "<td data-label='Vence'>" + fmtDate(b.due) + "</td><td data-label='Estado'>" + stateHtml + "</td>" +
         '<td class="t-act">' + action + "</td></tr>";
     }).join("");
     body.querySelectorAll("[data-pay]").forEach(function (b) {
