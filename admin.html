@@ -9,7 +9,7 @@
   <title>WOY — Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="assets/tokens.css?v=11" />
-  <link rel="stylesheet" href="assets/admin.css?v=11" />
+  <link rel="stylesheet" href="assets/admin.css?v=15" />
 </head>
 <body class="admin">
   <div class="lock" id="lockScreen" hidden>
@@ -63,6 +63,12 @@
         <div class="card">
           <h3 id="dishCount">Platos</h3>
           <p class="hint">El interruptor controla si el plato aparece disponible en el menú del cliente.</p>
+          <div class="dish-tools">
+            <label class="dsearch"><i class="ti ti-search"></i>
+              <input type="search" id="dishSearch" placeholder="Buscar plato por nombre…" aria-label="Buscar plato" />
+            </label>
+            <select id="dishFilter" aria-label="Filtrar por categoría"></select>
+          </div>
           <div class="dish-grid" id="dishGrid"></div>
         </div>
       </section>
@@ -289,6 +295,6 @@
 
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/admin.js?v=12"></script>
+  <script src="assets/admin.js?v=15"></script>
 </body>
 </html>

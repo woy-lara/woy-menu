@@ -1165,3 +1165,40 @@ body.admin {
 .pill-btn.ghost.danger:hover {
   background: #fdecea;
 }
+
+/* ---------- Buscador/filtro del catálogo (v15) ---------- */
+.dish-tools {
+  display: flex;
+  gap: 10px;
+  margin: 4px 0 16px;
+  flex-wrap: wrap;
+}
+.dsearch {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+}
+.dsearch .ti { color: var(--ink-3); font-size: 18px; }
+.dsearch input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  padding: 11px 0;
+  font-size: 14px;
+}
+.dish-tools #dishFilter {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 200px;
+}

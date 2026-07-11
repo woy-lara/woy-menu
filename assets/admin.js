@@ -235,9 +235,10 @@
       b.addEventListener("click", function () {
         var id = b.getAttribute("data-cat");
         data.categories = data.categories.filter(function (c) { return c.id !== id; });
-        save(); renderCats(); toast("Categoría eliminada", "ti-trash");
+        save(); renderCats(); renderDishes(); toast("Categoría eliminada", "ti-trash");
       });
     });
+    fillDishFilter();
   }
   function initCatAdd() {
     $("addCat").addEventListener("click", function () {
@@ -257,14 +258,41 @@
     var c = (data.categories || []).find(function (x) { return x.id === id; });
     return c ? c.name : "Otros";
   }
+  var dishQuery = "", dishFilterCat = "all";
+  function fillDishFilter() {
+    var sel = $("dishFilter");
+    if (!sel) return;
+    var cur = sel.value || "all";
+    sel.innerHTML = '<option value="all">Todas las categorías</option>' +
+      (data.categories || []).map(function (c) {
+        return '<option value="' + c.id + '">' + esc(c.emoji ? c.emoji + " " : "") + esc(c.name) + "</option>";
+      }).join("");
+    sel.value = data.categories.some(function (c) { return c.id === cur; }) ? cur : "all";
+  }
   function renderDishes() {
     var host = $("dishGrid");
-    $("dishCount").textContent = "Platos (" + data.dishes.length + ")";
     if (!data.dishes.length) {
+      $("dishCount").textContent = "Platos (0)";
       host.innerHTML = '<div class="empty-mini">Aún no hay platos. Toca “Nuevo plato”.</div>';
       return;
     }
-    host.innerHTML = data.dishes.map(function (d) {
+    var q = dishQuery.trim().toLowerCase();
+    var listD = data.dishes.filter(function (d) {
+      if (dishFilterCat !== "all" && d.catId !== dishFilterCat) return false;
+      if (q) {
+        var hay = (d.name + " " + (d.desc || "") + " " + (d.nameEn || "")).toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+    $("dishCount").textContent = (q || dishFilterCat !== "all")
+      ? "Platos (" + listD.length + " de " + data.dishes.length + ")"
+      : "Platos (" + data.dishes.length + ")";
+    if (!listD.length) {
+      host.innerHTML = '<div class="empty-mini">Ningún plato coincide con tu búsqueda.</div>';
+      return;
+    }
+    host.innerHTML = listD.map(function (d) {
       var thumb = d.img ? '<img src="' + esc(d.img) + '" alt="">' : esc(d.emoji || "🍽️");
 
       // Chips: destacado, etiquetas, tiempo y n.º de opciones
@@ -819,9 +847,16 @@
     initMarketing();
     initCatAdd();
     initTables();
+    initCatalogTools();
     renderCats();
     renderDishes();
     renderQR();
+  }
+
+  function initCatalogTools() {
+    var s = $("dishSearch"), f = $("dishFilter");
+    if (s) s.addEventListener("input", function (e) { dishQuery = e.target.value; renderDishes(); });
+    if (f) f.addEventListener("change", function (e) { dishFilterCat = e.target.value; renderDishes(); });
   }
 
   document.addEventListener("DOMContentLoaded", boot);
