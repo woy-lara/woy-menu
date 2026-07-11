@@ -236,11 +236,9 @@
 
     /* --- Bienvenida + acciones rápidas --- */
     $("dashWelcome").innerHTML =
-      '<div><h1>Hola, Lara 👋</h1><p>' + todayLabel() + " · esto es lo que pasa en WOY hoy.</p></div>" +
+      '<div><h1>Hola, <em class="wserif">Lara</em> 👋</h1><p>' + todayLabel() + " · esto es lo que pasa en WOY hoy.</p></div>" +
       '<div class="dw-acts">' +
-      '<button class="pill-btn ghost" data-act="cliente"><i class="ti ti-plus"></i>Nuevo cliente</button>' +
       '<button class="pill-btn" data-act="solicitud"><i class="ti ti-clipboard-plus"></i>Nueva solicitud</button></div>';
-    $("dashWelcome").querySelector('[data-act="cliente"]').addEventListener("click", function () { openClient(null); });
     $("dashWelcome").querySelector('[data-act="solicitud"]').addEventListener("click", function () { openRequest(null, null); });
 
     /* --- Necesita tu atención (alertas accionables) --- */

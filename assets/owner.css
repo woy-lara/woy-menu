@@ -1,8 +1,38 @@
 /* WOY Projects — panel de dueño */
 
+/* ===== Sistema visual WOY Studio (guía de estilo) — solo en el panel ===== */
 body.owner {
-  background: var(--surface-2);
+  --accent: #6d28d9;          /* Violeta (acento) */
+  --accent-press: #5b21b6;
+  --accent-soft: #efe9fd;
+  --accent-2: #6d28d9;
+  --ink: #17141d;             /* Tinta */
+  --ink-2: #6f6a7a;           /* Secundario */
+  --ink-3: #a29daf;           /* Terciario */
+  --line: #e8e5ef;            /* Borde */
+  --line-2: #ddd6ea;
+  --surface: #ffffff;
+  --surface-2: #f7f5fa;       /* Fondo suave */
+  --bg: #ffffff;
+  --bg-warm: #f7f5fa;
+  --font: "Archivo", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-head: "Archivo", ui-sans-serif, sans-serif;
+
+  background: #f7f5fa;
+  font-family: var(--font);
 }
+/* Acento editorial: Instrument Serif en itálica (una palabra dentro del titular) */
+body.owner .wserif {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+/* Titulares con Archivo, y campana de alertas en violeta */
+body.owner h1,
+body.owner .dash-welcome h1,
+body.owner .owner-hd h1 { font-family: var(--font-head); font-weight: 800; letter-spacing: -0.02em; }
+body.owner .al-hd .ti { color: var(--accent); }
 
 .owner-top {
   position: sticky;
