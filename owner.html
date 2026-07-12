@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" />
   <link rel="stylesheet" href="assets/tokens.css?v=14" />
   <link rel="stylesheet" href="assets/admin.css?v=14" />
-  <link rel="stylesheet" href="assets/owner.css?v=26" />
+  <link rel="stylesheet" href="assets/owner.css?v=27" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -62,20 +62,28 @@
           <div class="dash-welcome" id="dashWelcome"></div>
           <div class="dash-alerts" id="dashAlerts"></div>
           <div class="kpi-row" id="kpiRow"></div>
-          <div class="dash-grid">
+          <div class="card">
+            <div class="card-hd"><h3>Ingresos · últimos 6 meses</h3></div>
+            <div id="revChart"></div>
+          </div>
+          <div class="dash-3">
             <div class="card">
-              <div class="card-hd"><h3>Ingresos · últimos 6 meses</h3></div>
-              <div id="revChart"></div>
+              <div class="card-hd"><h3>Solicitudes</h3><button class="linkbtn" data-goto="solicitudes">Ver todas</button></div>
+              <div id="reqSummary"></div>
             </div>
-            <div class="dash-col">
-              <div class="card">
-                <div class="card-hd"><h3>Solicitudes</h3><button class="linkbtn" data-goto="solicitudes">Ver todas</button></div>
-                <div id="reqSummary"></div>
+            <div class="card">
+              <div class="card-hd"><h3>Calendario</h3></div>
+              <div class="cal-head">
+                <button class="cal-arrow" id="calPrev" aria-label="Mes anterior"><i class="ti ti-chevron-left"></i></button>
+                <b id="calMonthLbl"></b>
+                <button class="cal-arrow" id="calNext" aria-label="Mes siguiente"><i class="ti ti-chevron-right"></i></button>
               </div>
-              <div class="card">
-                <div class="card-hd"><h3>Próximas tareas</h3><button class="linkbtn" data-goto="tareas">Ver todas</button></div>
-                <div id="dashTasks"></div>
-              </div>
+              <div class="cal-weekdays"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+              <div class="cal-grid" id="dashCal"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><h3>Tareas</h3><button class="linkbtn" data-goto="tareas">Ver todas</button></div>
+              <div id="dashTasks"></div>
             </div>
           </div>
           <div class="dash-grid">
@@ -371,6 +379,6 @@
   <div class="atoast" id="atoast"></div>
 
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/owner.js?v=26"></script>
+  <script src="assets/owner.js?v=27"></script>
 </body>
 </html>

@@ -324,6 +324,7 @@
     });
 
     renderDashTasks();
+    renderCalendar();
 
     /* --- Actividad de clientes (rendimiento / modificaciones) --- */
     var rows = list.map(function (c) {
@@ -1049,6 +1050,38 @@
     closeTask(); renderTasks(); toast("Tarea eliminada", "ti-trash");
   }
 
+  // Calendario del Panel (mes con días de tareas coloreados)
+  var calBase = null;
+  function renderCalendar() {
+    var host = $("dashCal");
+    if (!host) return;
+    var base = calBase ? new Date(calBase.getFullYear(), calBase.getMonth(), 1) : new Date();
+    var year = base.getFullYear(), month = base.getMonth();
+    $("calMonthLbl").textContent = MONTHS[month].charAt(0).toUpperCase() + MONTHS[month].slice(1) + " " + year;
+    var startDay = (new Date(year, month, 1).getDay() + 6) % 7; // lunes = 0
+    var dim = new Date(year, month + 1, 0).getDate();
+    var today = new Date();
+    var isThisMonth = today.getFullYear() === year && today.getMonth() === month;
+    var taskDay = {};
+    loadTasks().forEach(function (t) {
+      if (t.status !== "hecho" && t.due) {
+        var d = parseISO(t.due);
+        if (d.getFullYear() === year && d.getMonth() === month) taskDay[d.getDate()] = t.color || "#7c5cff";
+      }
+    });
+    var cells = "";
+    for (var i = 0; i < startDay; i++) cells += '<span class="cal-cell empty"></span>';
+    for (var day = 1; day <= dim; day++) {
+      var col = taskDay[day];
+      var cls = "cal-cell" + (col ? " has" : "") + (isThisMonth && today.getDate() === day ? " today" : "");
+      cells += '<span class="' + cls + '"' + (col ? ' style="--cc:' + col + '"' : "") + ' data-day="' + day + '">' + day + "</span>";
+    }
+    host.innerHTML = cells;
+    host.querySelectorAll(".cal-cell.has").forEach(function (c) {
+      c.addEventListener("click", function () { showTab("tareas"); });
+    });
+  }
+
   // Widget de próximas tareas en el Panel (home)
   function renderDashTasks() {
     var host = $("dashTasks");
@@ -1168,6 +1201,13 @@
     $("reqSave").addEventListener("click", saveReq);
     $("reqDelete").addEventListener("click", deleteReq);
     $("reqModal").addEventListener("click", function (e) { if (e.target === $("reqModal")) closeReq(); });
+
+    $("calPrev").addEventListener("click", function () {
+      var b = calBase ? new Date(calBase) : new Date(); b.setDate(1); b.setMonth(b.getMonth() - 1); calBase = b; renderCalendar();
+    });
+    $("calNext").addEventListener("click", function () {
+      var b = calBase ? new Date(calBase) : new Date(); b.setDate(1); b.setMonth(b.getMonth() + 1); calBase = b; renderCalendar();
+    });
 
     $("newTask").addEventListener("click", function () { openTask(null); });
     $("taskClose").addEventListener("click", closeTask);
