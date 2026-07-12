@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" />
   <link rel="stylesheet" href="assets/tokens.css?v=14" />
   <link rel="stylesheet" href="assets/admin.css?v=14" />
-  <link rel="stylesheet" href="assets/owner.css?v=22" />
+  <link rel="stylesheet" href="assets/owner.css?v=23" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -39,11 +39,12 @@
         <button data-tab="clientes"><i class="ti ti-building-store"></i><span>Clientes</span></button>
         <button data-tab="cobros"><i class="ti ti-cash"></i><span>Cobros</span><span class="tab-dot" id="cobrosDot" hidden></span></button>
         <button data-tab="solicitudes"><i class="ti ti-clipboard-list"></i><span>Solicitudes</span><span class="tab-dot" id="solDot" hidden></span></button>
+        <button data-tab="tareas"><i class="ti ti-checklist"></i><span>Tareas</span><span class="nav-count" id="tareasCount" hidden>0</span></button>
       </nav>
       <div class="o-side-foot">
         <button class="o-side-link" id="bizProfile" type="button"><i class="ti ti-settings"></i><span>Datos de facturación</span></button>
         <button class="o-side-link" id="ownLogout" type="button"><i class="ti ti-logout"></i><span>Cerrar sesión</span></button>
-        <div class="o-wordmark"><b>WOY<span class="reg">®</span> STUDIO</b><small>© 2026 · Panamá</small></div>
+        <div class="o-wordmark"><b>WOY<span class="reg">®</span> PROJECTS</b><small>© 2026 · Panamá</small></div>
       </div>
     </aside>
 
@@ -110,6 +111,16 @@
             <button class="pill-btn" id="newRequest"><i class="ti ti-plus"></i>Nueva solicitud</button>
           </div>
           <div class="req-board" id="reqBoard"></div>
+        </section>
+
+        <!-- ======== TAREAS ======== -->
+        <section class="tabsec" id="tab-tareas">
+          <div class="owner-hd">
+            <div><h1>Tareas</h1><p>Recordatorios y pendientes, con responsable y fecha.</p></div>
+            <button class="pill-btn" id="newTask"><i class="ti ti-plus"></i>Nueva tarea</button>
+          </div>
+          <div class="task-filters" id="taskFilters"></div>
+          <div class="task-grid" id="taskGrid"></div>
         </section>
       </div>
     </main>
@@ -289,6 +300,48 @@
     </div>
   </div>
 
+  <!-- ===== Modal tarea ===== -->
+  <div class="modal-scrim" id="taskModal">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3 id="taskModalTitle">Nueva tarea</h3>
+        <button class="iconbtn" id="taskClose" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="field"><label>Título</label><input type="text" id="tkTitle" placeholder="Ej. Enviar arte de la promo a Café del Valle" /></div>
+      <div class="field"><label>Notas <span style="color:var(--ink-3);font-weight:400">(opcional)</span></label><textarea id="tkNotes"></textarea></div>
+      <div class="row2">
+        <div class="field"><label>Responsable / cliente</label><select id="tkClient"></select></div>
+        <div class="field"><label>Prioridad</label>
+          <select id="tkPriority">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Fecha límite</label><input type="date" id="tkDue" /></div>
+        <div class="field"><label>Hora <span style="color:var(--ink-3);font-weight:400">(opcional)</span></label><input type="time" id="tkTime" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Estado</label>
+          <select id="tkStatus">
+            <option value="pendiente">Pendiente</option>
+            <option value="curso">En curso</option>
+            <option value="hecho">Hecho</option>
+          </select>
+        </div>
+        <div class="field"><label>Color</label><div class="tk-swatches" id="tkColors"></div></div>
+      </div>
+      <div class="modal-ft">
+        <button class="pill-btn ghost danger" id="tkDelete" type="button" hidden><i class="ti ti-trash"></i>Eliminar</button>
+        <span style="flex:1"></span>
+        <button class="pill-btn ghost" id="tkCancel" type="button">Cancelar</button>
+        <button class="pill-btn" id="tkSave" type="button">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== Modal perfil WOY (datos del recibo) ===== -->
   <div class="modal-scrim" id="bizModal">
     <div class="modal">
@@ -312,6 +365,6 @@
   <div class="atoast" id="atoast"></div>
 
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/owner.js?v=20"></script>
+  <script src="assets/owner.js?v=23"></script>
 </body>
 </html>

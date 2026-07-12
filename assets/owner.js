@@ -182,7 +182,7 @@
   }
 
   /* ---------- Navegación (lateral) ---------- */
-  var TAB_TITLES = { dashboard: "Panel", clientes: "Clientes", cobros: "Cobros", solicitudes: "Solicitudes" };
+  var TAB_TITLES = { dashboard: "Panel", clientes: "Clientes", cobros: "Cobros", solicitudes: "Solicitudes", tareas: "Tareas" };
   function showTab(name) {
     $("ownerNav").querySelectorAll("button").forEach(function (b) {
       b.classList.toggle("is-active", b.getAttribute("data-tab") === name);
@@ -196,6 +196,7 @@
     if (name === "clientes") renderClients();
     if (name === "cobros") renderCobros();
     if (name === "solicitudes") renderRequests();
+    if (name === "tareas") renderTasks();
   }
   function openSide() { $("oSide").classList.add("open"); $("oScrim").classList.add("show"); }
   function closeSide() { $("oSide").classList.remove("open"); $("oScrim").classList.remove("show"); }
@@ -275,7 +276,7 @@
     });
     reqOpen = reqAll.filter(function (r) { return r.status !== "entregado"; }).length;
     var kpis = [
-      { ic: "ti-chart-line", n: money(mrr), lbl: "Ingreso mensual (MRR)", cls: "" },
+      { ic: "ti-chart-line", n: money(mrr), lbl: "Ingreso mensual (MRR)", cls: "brand" },
       { ic: "ti-building-store", n: activos, lbl: "Clientes activos", cls: "" },
       { ic: "ti-clock-dollar", n: money(porCobrar), lbl: "Por cobrar este mes", cls: porCobrar > 0 ? "amber" : "" },
       { ic: "ti-clipboard-list", n: reqOpen, lbl: "Solicitudes abiertas", cls: "" }
@@ -296,12 +297,7 @@
     });
     months.forEach(function (m) { if (rev[m.key] > maxRev) maxRev = rev[m.key]; });
     $("revChart").innerHTML = maxRev > 0
-      ? '<div class="rev-bars">' + months.map(function (m) {
-          var v = rev[m.key], h = Math.round((v / maxRev) * 100);
-          return '<div class="rev-col"><span class="rev-val">' + (v ? money(v).replace(".00", "") : "") + "</span>" +
-            '<span class="rev-bar" style="height:' + Math.max(h, 2) + '%"></span>' +
-            '<span class="rev-lbl">' + m.label + "</span></div>";
-        }).join("") + "</div>"
+      ? revChartSVG(months, rev, maxRev)
       : '<div class="mini-empty">Aún no hay pagos registrados. Cuando cobres, aquí verás tus ingresos por mes.</div>';
 
     /* --- Solicitudes (pipeline + próximas) --- */
@@ -372,6 +368,7 @@
     var pend = flatRequests(list).some(function (r) { return r.status === "pendiente"; });
     $("cobrosDot").hidden = !overdue;
     $("solDot").hidden = !pend;
+    updateTaskCount();
   }
 
   /* ---------- Clientes ---------- */
@@ -904,6 +901,178 @@
     toast("Solicitud eliminada", "ti-trash");
   }
 
+  /* ---------- Tareas / recordatorios ---------- */
+  var TASKS_KEY = "woy_tasks";
+  var TASK_COLORS = ["#7c5cff", "#f97362", "#3ec6d9", "#f5b13d", "#4bbf7b", "#ec6ec1"];
+  var TPRIO = { alta: { label: "Alta", dot: "#e5484d" }, media: { label: "Media", dot: "#f5b13d" }, baja: { label: "Baja", dot: "#4bbf7b" } };
+  var TSTATUS_LBL = { pendiente: "Pendiente", curso: "En curso", hecho: "Hecho" };
+  var taskFilter = "todas", tkEditing = null, tkColor = TASK_COLORS[0];
+
+  function loadTasks() { try { return JSON.parse(localStorage.getItem(TASKS_KEY)) || []; } catch (e) { return []; } }
+  function saveTasks(list) { try { localStorage.setItem(TASKS_KEY, JSON.stringify(list)); } catch (e) {} }
+  function updateTaskCount(tasks) {
+    tasks = tasks || loadTasks();
+    var open = tasks.filter(function (t) { return t.status !== "hecho"; }).length;
+    var el = $("tareasCount");
+    if (el) { el.textContent = open; el.hidden = open === 0; }
+  }
+  function taskAvatar(slug) {
+    if (slug === "__none__" || slug == null) return { html: '<i class="ti ti-pin"></i>', name: "General" };
+    var c = findClient(allClients(), slug);
+    if (!c) return { html: '<i class="ti ti-pin"></i>', name: "General" };
+    return { html: c.logoImg ? '<img src="' + esc(c.logoImg) + '" alt="">' : esc(c.emoji || "🍽️"), name: c.name };
+  }
+  function renderTasks() {
+    var tasks = loadTasks();
+    var counts = { todas: tasks.length, pendiente: 0, curso: 0, hecho: 0 };
+    tasks.forEach(function (t) { counts[t.status] = (counts[t.status] || 0) + 1; });
+    var filters = [
+      { id: "todas", label: "Todas" }, { id: "pendiente", label: "Pendiente" },
+      { id: "curso", label: "En curso" }, { id: "hecho", label: "Hecho" }
+    ];
+    $("taskFilters").innerHTML = filters.map(function (f) {
+      return '<button class="tf' + (taskFilter === f.id ? " on" : "") + '" data-tf="' + f.id + '">' +
+        f.label + ' <span>' + (counts[f.id] || 0) + "</span></button>";
+    }).join("");
+    $("taskFilters").querySelectorAll("[data-tf]").forEach(function (b) {
+      b.addEventListener("click", function () { taskFilter = b.getAttribute("data-tf"); renderTasks(); });
+    });
+
+    var list = tasks.filter(function (t) { return taskFilter === "todas" || t.status === taskFilter; });
+    list.sort(function (a, b) {
+      if ((a.status === "hecho") !== (b.status === "hecho")) return a.status === "hecho" ? 1 : -1;
+      return (a.due || "9999") < (b.due || "9999") ? -1 : 1;
+    });
+    var grid = $("taskGrid");
+    if (!list.length) {
+      grid.innerHTML = '<div class="task-empty"><i class="ti ti-checklist"></i><p>' +
+        (tasks.length ? "No hay tareas en este filtro." : "Aún no tienes tareas. Crea una con “Nueva tarea”.") + "</p></div>";
+      updateTaskCount(tasks); return;
+    }
+    grid.innerHTML = list.map(function (t, i) { return taskCard(t, i); }).join("");
+    grid.querySelectorAll("[data-tk]").forEach(function (card) {
+      card.addEventListener("click", function (e) {
+        if (e.target.closest("[data-done]")) return;
+        openTask(card.getAttribute("data-tk"));
+      });
+    });
+    grid.querySelectorAll("[data-done]").forEach(function (b) {
+      b.addEventListener("click", function (e) { e.stopPropagation(); toggleDone(b.getAttribute("data-done")); });
+    });
+    updateTaskCount(tasks);
+  }
+  function taskCard(t, i) {
+    var av = taskAvatar(t.clientSlug);
+    var overdue = t.status !== "hecho" && t.due && daysUntil(t.due) < 0;
+    var today = t.status !== "hecho" && t.due && daysUntil(t.due) === 0;
+    var when = t.due ? fmtDate(t.due) + (t.time ? " · " + esc(t.time) : "") : "Sin fecha";
+    var whenPfx = overdue ? "Venció · " : (today ? "Hoy · " : "");
+    var whenCls = overdue ? " late" : (today ? " today" : "");
+    var pr = TPRIO[t.priority] || TPRIO.media;
+    var notes = t.notes ? '<p class="tk-notes">' + esc(t.notes) + "</p>" : "";
+    var done = t.status === "hecho";
+    var delay = Math.min(i * 0.045, 0.4);
+    return [
+      '<div class="task-card', (done ? " done" : ""), '" data-tk="', esc(t.id),
+      '" style="--tc:', (t.color || "#7c5cff"), ";animation-delay:", delay, 's">',
+      '<div class="tk-top">',
+      '<span class="tk-when', whenCls, '"><i class="ti ti-clock"></i>', whenPfx, when, "</span>",
+      '<span class="tk-prio"><i class="pdot" style="background:', pr.dot, '"></i>', pr.label, "</span></div>",
+      "<h4>", esc(t.title), "</h4>", notes,
+      '<div class="tk-foot"><span class="tk-who"><span class="tk-av">', av.html, "</span>", esc(av.name), "</span>",
+      '<span class="tk-state"><span class="tk-badge">', (TSTATUS_LBL[t.status] || ""), "</span>",
+      '<button class="tk-check', (done ? " on" : ""), '" data-done="', esc(t.id),
+      '" aria-label="Marcar hecho"><i class="ti ti-check"></i></button></span></div></div>'
+    ].join("");
+  }
+  function toggleDone(id) {
+    var list = loadTasks(), t = list.filter(function (x) { return x.id === id; })[0];
+    if (!t) return;
+    t.status = t.status === "hecho" ? "pendiente" : "hecho";
+    saveTasks(list); renderTasks();
+    toast(t.status === "hecho" ? "Tarea completada ✓" : "Tarea reabierta", "ti-check");
+  }
+  function fillTaskClients(sel) {
+    $("tkClient").innerHTML = '<option value="__none__">General (sin cliente)</option>' +
+      allClients().map(function (c) {
+        return '<option value="' + esc(c.isDefault ? "" : c.slug) + '">' + esc(c.name) + "</option>";
+      }).join("");
+    if (sel != null) $("tkClient").value = sel;
+  }
+  function renderTkColors() {
+    $("tkColors").innerHTML = TASK_COLORS.map(function (c) {
+      return '<button type="button" class="tk-sw' + (tkColor === c ? " on" : "") + '" data-color="' + c + '" style="background:' + c + '" aria-label="color"></button>';
+    }).join("");
+    $("tkColors").querySelectorAll("[data-color]").forEach(function (b) {
+      b.addEventListener("click", function () { tkColor = b.getAttribute("data-color"); renderTkColors(); });
+    });
+  }
+  function openTask(id) {
+    var t = id ? loadTasks().filter(function (x) { return x.id === id; })[0] : null;
+    tkEditing = t ? t.id : null;
+    $("taskModalTitle").textContent = t ? "Editar tarea" : "Nueva tarea";
+    $("tkDelete").hidden = !t;
+    fillTaskClients(t ? (t.clientSlug || "") : "__none__");
+    $("tkTitle").value = t ? t.title : "";
+    $("tkNotes").value = t ? (t.notes || "") : "";
+    $("tkPriority").value = t ? t.priority : "media";
+    $("tkDue").value = t ? (t.due || "") : "";
+    $("tkTime").value = t ? (t.time || "") : "";
+    $("tkStatus").value = t ? t.status : "pendiente";
+    tkColor = t ? (t.color || TASK_COLORS[0]) : TASK_COLORS[0];
+    renderTkColors();
+    $("taskModal").classList.add("is-open");
+    if (!t) $("tkTitle").focus();
+  }
+  function closeTask() { $("taskModal").classList.remove("is-open"); }
+  function saveTask() {
+    var title = $("tkTitle").value.trim();
+    if (!title) { toast("Escribe un título para la tarea", "ti-alert-circle"); return; }
+    var list = loadTasks();
+    var payload = {
+      title: title, notes: $("tkNotes").value.trim(), clientSlug: $("tkClient").value,
+      priority: $("tkPriority").value, due: $("tkDue").value || "", time: $("tkTime").value || "",
+      status: $("tkStatus").value, color: tkColor
+    };
+    if (tkEditing) { var t = list.filter(function (x) { return x.id === tkEditing; })[0]; if (t) Object.assign(t, payload); }
+    else { list.push(Object.assign({ id: window.WOY.uid("tk"), createdAt: todayISO() }, payload)); }
+    saveTasks(list); closeTask(); renderTasks();
+    toast(tkEditing ? "Tarea actualizada" : "Tarea creada", "ti-check");
+  }
+  function deleteTask() {
+    if (!tkEditing) return;
+    if (!confirm("¿Eliminar esta tarea?")) return;
+    saveTasks(loadTasks().filter(function (x) { return x.id !== tkEditing; }));
+    closeTask(); renderTasks(); toast("Tarea eliminada", "ti-trash");
+  }
+
+  /* ---------- Gráfico de ingresos (crecimiento, colores de marca) ---------- */
+  function revChartSVG(months, rev, maxRev) {
+    var W = 560, H = 172, padX = 30, padTop = 26, padBot = 34;
+    var n = months.length, innerW = W - padX * 2, innerH = H - padTop - padBot;
+    function x(i) { return padX + (n <= 1 ? innerW / 2 : i * innerW / (n - 1)); }
+    function y(v) { return padTop + innerH - (maxRev ? (v / maxRev) * innerH : 0); }
+    var pts = months.map(function (m, i) { return [x(i), y(rev[m.key])]; });
+    var line = pts.map(function (p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+    var area = "M" + pts[0][0].toFixed(1) + " " + (padTop + innerH) + " " +
+      pts.map(function (p) { return "L" + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ") +
+      " L" + pts[n - 1][0].toFixed(1) + " " + (padTop + innerH) + " Z";
+    var deco = pts.map(function (p, i) {
+      var v = rev[months[i].key];
+      return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (v > 0 ? 4 : 2.5) + '" class="rc-dot"/>' +
+        (v > 0 ? '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 11).toFixed(1) + '" class="rc-val">' + money(v).replace(".00", "") + "</text>" : "");
+    }).join("");
+    var labels = months.map(function (m, i) {
+      return '<text x="' + x(i).toFixed(1) + '" y="' + (H - 12) + '" class="rc-lbl">' + m.label + "</text>";
+    }).join("");
+    return '<svg viewBox="0 0 ' + W + " " + H + '" class="rc-svg">' +
+      '<defs><linearGradient id="rcGrad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#6d28d9" stop-opacity="0.30"/>' +
+      '<stop offset="100%" stop-color="#6d28d9" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#rcGrad)"/>' +
+      '<path d="' + line + '" class="rc-line"/>' + deco + labels + "</svg>";
+  }
+
   /* ---------- Perfil WOY (datos del recibo) ---------- */
   function openBiz() {
     var b = loadBiz();
@@ -974,6 +1143,13 @@
     $("reqSave").addEventListener("click", saveReq);
     $("reqDelete").addEventListener("click", deleteReq);
     $("reqModal").addEventListener("click", function (e) { if (e.target === $("reqModal")) closeReq(); });
+
+    $("newTask").addEventListener("click", function () { openTask(null); });
+    $("taskClose").addEventListener("click", closeTask);
+    $("tkCancel").addEventListener("click", closeTask);
+    $("tkSave").addEventListener("click", saveTask);
+    $("tkDelete").addEventListener("click", deleteTask);
+    $("taskModal").addEventListener("click", function (e) { if (e.target === $("taskModal")) closeTask(); });
 
     $("bizProfile").addEventListener("click", openBiz);
     $("bizClose").addEventListener("click", closeBiz);
