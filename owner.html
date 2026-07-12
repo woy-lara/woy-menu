@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" />
   <link rel="stylesheet" href="assets/tokens.css?v=14" />
   <link rel="stylesheet" href="assets/admin.css?v=14" />
-  <link rel="stylesheet" href="assets/owner.css?v=27" />
+  <link rel="stylesheet" href="assets/owner.css?v=28" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -62,9 +62,19 @@
           <div class="dash-welcome" id="dashWelcome"></div>
           <div class="dash-alerts" id="dashAlerts"></div>
           <div class="kpi-row" id="kpiRow"></div>
-          <div class="card">
-            <div class="card-hd"><h3>Ingresos · últimos 6 meses</h3></div>
-            <div id="revChart"></div>
+          <div class="dash-3">
+            <div class="card">
+              <div class="card-hd"><h3>Ingresos · últimos 6 meses</h3></div>
+              <div id="revChart"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><h3>Actividad de clientes</h3><button class="linkbtn" data-goto="clientes">Ver clientes</button></div>
+              <div id="clientActivity"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><h3>Próximos cobros</h3><button class="linkbtn" data-goto="cobros">Ver todos</button></div>
+              <div id="dashCobros"></div>
+            </div>
           </div>
           <div class="dash-3">
             <div class="card">
@@ -84,16 +94,6 @@
             <div class="card">
               <div class="card-hd"><h3>Tareas</h3><button class="linkbtn" data-goto="tareas">Ver todas</button></div>
               <div id="dashTasks"></div>
-            </div>
-          </div>
-          <div class="dash-grid">
-            <div class="card">
-              <div class="card-hd"><h3>Actividad de clientes</h3><button class="linkbtn" data-goto="clientes">Ver clientes</button></div>
-              <div id="clientActivity"></div>
-            </div>
-            <div class="card">
-              <div class="card-hd"><h3>Próximos cobros</h3><button class="linkbtn" data-goto="cobros">Ver todos</button></div>
-              <div id="dashCobros"></div>
             </div>
           </div>
         </section>
@@ -379,6 +379,6 @@
   <div class="atoast" id="atoast"></div>
 
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/owner.js?v=27"></script>
+  <script src="assets/owner.js?v=28"></script>
 </body>
 </html>

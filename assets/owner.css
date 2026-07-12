@@ -820,3 +820,25 @@ body.owner .al-hd .ti { color: var(--accent); }
 .cal-cell.has:hover { transform: scale(1.06); }
 .cal-cell.today { box-shadow: inset 0 0 0 2px var(--accent); color: var(--accent); }
 .cal-cell.today.has { box-shadow: inset 0 0 0 2px #17141d; color: #17141d; }
+
+/* ============ Tareas bold compactas en el Home (v28) ============ */
+#dashTasks { display: flex; flex-direction: column; gap: 11px; }
+.dtask {
+  position: relative; background: var(--tc); color: #17141d; border-radius: 16px;
+  padding: 13px 15px; cursor: pointer; display: flex; flex-direction: column; gap: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.dtask:hover { transform: translateY(-2px); box-shadow: 0 14px 26px -16px color-mix(in srgb, var(--tc) 70%, transparent); }
+.dtask .tk-arrow.sm {
+  position: absolute; top: 11px; right: 11px; width: 30px; height: 30px; font-size: 15px;
+  background: rgba(23, 20, 29, 0.9); color: #fff;
+}
+.dtask:hover .tk-arrow.sm { transform: rotate(45deg); background: #17141d; }
+.dtask-when { font-size: 11.5px; font-weight: 700; color: rgba(23, 20, 29, 0.6); display: inline-flex; align-items: center; gap: 4px; padding-right: 34px; }
+.dtask-when .ti { font-size: 14px; }
+.dtask-when.late { color: #7a1c14; }
+.dtask b { font-size: 15px; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; padding-right: 18px; }
+.dtask-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 3px; }
+.dtask .tk-who { color: #17141d; font-weight: 700; font-size: 12px; }
+.tk-av.sm { width: 26px; height: 26px; font-size: 13px; border-width: 1.5px; }
+.tk-badge.sm { font-size: 10.5px; padding: 2px 9px; }

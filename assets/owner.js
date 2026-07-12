@@ -1082,22 +1082,24 @@
     });
   }
 
-  // Widget de próximas tareas en el Panel (home)
+  // Widget de próximas tareas en el Panel (home): tarjetas bold a color
   function renderDashTasks() {
     var host = $("dashTasks");
     if (!host) return;
     var tasks = loadTasks().filter(function (t) { return t.status !== "hecho"; })
-      .sort(function (a, b) { return (a.due || "9999") < (b.due || "9999") ? -1 : 1; }).slice(0, 4);
+      .sort(function (a, b) { return (a.due || "9999") < (b.due || "9999") ? -1 : 1; }).slice(0, 3);
     host.innerHTML = tasks.length ? tasks.map(function (t) {
       var av = taskAvatar(t.clientSlug);
       var overdue = t.due && daysUntil(t.due) < 0;
       var today = t.due && daysUntil(t.due) === 0;
       var when = t.due ? fmtDate(t.due) : "Sin fecha";
-      return '<div class="mini-row" data-tk="' + esc(t.id) + '">' +
-        '<span class="mini-emoji" style="box-shadow:0 0 0 2px ' + (t.color || "#7c5cff") + '">' + av.html + "</span>" +
-        '<span class="mini-main"><b>' + esc(t.title) + "</b><small>" + esc(av.name) + "</small></span>" +
-        '<span class="due-tag ' + (overdue ? "d-bad" : today ? "d-amber" : "d-mut") + '">' +
-        (overdue ? "Venció" : today ? "Hoy" : when) + "</span></div>";
+      var whenPfx = overdue ? "Venció · " : (today ? "Hoy · " : "");
+      return '<div class="dtask" data-tk="' + esc(t.id) + '" style="--tc:' + (t.color || "#7c5cff") + '">' +
+        '<span class="tk-arrow sm"><i class="ti ti-arrow-up-right"></i></span>' +
+        '<div class="dtask-when' + (overdue ? " late" : "") + '"><i class="ti ti-clock"></i>' + whenPfx + when + "</div>" +
+        "<b>" + esc(t.title) + "</b>" +
+        '<div class="dtask-foot"><span class="tk-who"><span class="tk-av sm">' + av.html + "</span>" + esc(av.name) + "</span>" +
+        '<span class="tk-badge sm">' + (TSTATUS_LBL[t.status] || "") + "</span></div></div>";
     }).join("") : '<div class="mini-empty">Sin tareas pendientes 🎉</div>';
     host.querySelectorAll("[data-tk]").forEach(function (r) {
       r.addEventListener("click", function () { openTask(r.getAttribute("data-tk")); });
