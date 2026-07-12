@@ -975,6 +975,7 @@
     return [
       '<div class="task-card', (done ? " done" : ""), '" data-tk="', esc(t.id),
       '" style="--tc:', (t.color || "#7c5cff"), ";animation-delay:", delay, 's">',
+      '<span class="tk-arrow"><i class="ti ti-arrow-up-right"></i></span>',
       '<div class="tk-top">',
       '<span class="tk-when', whenCls, '"><i class="ti ti-clock"></i>', whenPfx, when, "</span>",
       '<span class="tk-prio"><i class="pdot" style="background:', pr.dot, '"></i>', pr.label, "</span></div>",
