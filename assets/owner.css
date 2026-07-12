@@ -666,3 +666,34 @@ body.owner .al-hd .ti { color: var(--accent); }
   .wtable td.t-act .pill-btn.sm { width: 100%; justify-content: center; }
   .t-client { font-size: 15px; }
 }
+
+/* ---------- Firma de marca WOY® STUDIO (pie de la barra lateral) ---------- */
+.o-wordmark {
+  margin-top: 14px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.o-wordmark b {
+  display: block;
+  font-family: "Archivo", sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1;
+}
+.o-wordmark .reg {
+  font-size: 0.62em;
+  vertical-align: 0.5em;
+  font-weight: 600;
+  margin: 0 0.02em;
+}
+.o-wordmark small {
+  display: block;
+  margin-top: 7px;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
