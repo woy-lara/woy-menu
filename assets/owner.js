@@ -323,6 +323,8 @@
       r.addEventListener("click", function () { var p = r.getAttribute("data-req").split("|"); openRequest(p[0], p[1]); });
     });
 
+    renderDashTasks();
+
     /* --- Actividad de clientes (rendimiento / modificaciones) --- */
     var rows = list.map(function (c) {
       return { c: c, upd: lastUpdatedISO(c), dishes: dishCount(c.isDefault ? null : c.slug) };
@@ -1045,6 +1047,28 @@
     if (!confirm("¿Eliminar esta tarea?")) return;
     saveTasks(loadTasks().filter(function (x) { return x.id !== tkEditing; }));
     closeTask(); renderTasks(); toast("Tarea eliminada", "ti-trash");
+  }
+
+  // Widget de próximas tareas en el Panel (home)
+  function renderDashTasks() {
+    var host = $("dashTasks");
+    if (!host) return;
+    var tasks = loadTasks().filter(function (t) { return t.status !== "hecho"; })
+      .sort(function (a, b) { return (a.due || "9999") < (b.due || "9999") ? -1 : 1; }).slice(0, 4);
+    host.innerHTML = tasks.length ? tasks.map(function (t) {
+      var av = taskAvatar(t.clientSlug);
+      var overdue = t.due && daysUntil(t.due) < 0;
+      var today = t.due && daysUntil(t.due) === 0;
+      var when = t.due ? fmtDate(t.due) : "Sin fecha";
+      return '<div class="mini-row" data-tk="' + esc(t.id) + '">' +
+        '<span class="mini-emoji" style="box-shadow:0 0 0 2px ' + (t.color || "#7c5cff") + '">' + av.html + "</span>" +
+        '<span class="mini-main"><b>' + esc(t.title) + "</b><small>" + esc(av.name) + "</small></span>" +
+        '<span class="due-tag ' + (overdue ? "d-bad" : today ? "d-amber" : "d-mut") + '">' +
+        (overdue ? "Venció" : today ? "Hoy" : when) + "</span></div>";
+    }).join("") : '<div class="mini-empty">Sin tareas pendientes 🎉</div>';
+    host.querySelectorAll("[data-tk]").forEach(function (r) {
+      r.addEventListener("click", function () { openTask(r.getAttribute("data-tk")); });
+    });
   }
 
   /* ---------- Gráfico de ingresos (crecimiento, colores de marca) ---------- */

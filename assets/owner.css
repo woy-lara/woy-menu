@@ -787,3 +787,11 @@ body.owner .al-hd .ti { color: var(--accent); }
 .kpi.brand { background: linear-gradient(180deg, var(--accent-soft), #fff); border-color: color-mix(in srgb, var(--accent) 22%, #fff); }
 .kpi.brand .kpi-ic { background: var(--accent); color: #fff; }
 .kpi.brand b { color: var(--accent); }
+
+/* Columna derecha del Panel: Solicitudes + Próximas tareas apiladas (v25) */
+.dash-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.dash-col .card { flex: 1; }
+
+/* Avatar de imagen dentro del mini-emoji (widget de tareas del home) */
+.mini-emoji { overflow: hidden; }
+.mini-emoji img { width: 100%; height: 100%; object-fit: cover; }

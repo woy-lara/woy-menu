@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" />
   <link rel="stylesheet" href="assets/tokens.css?v=14" />
   <link rel="stylesheet" href="assets/admin.css?v=14" />
-  <link rel="stylesheet" href="assets/owner.css?v=24" />
+  <link rel="stylesheet" href="assets/owner.css?v=26" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -67,9 +67,15 @@
               <div class="card-hd"><h3>Ingresos · últimos 6 meses</h3></div>
               <div id="revChart"></div>
             </div>
-            <div class="card">
-              <div class="card-hd"><h3>Solicitudes</h3><button class="linkbtn" data-goto="solicitudes">Ver todas</button></div>
-              <div id="reqSummary"></div>
+            <div class="dash-col">
+              <div class="card">
+                <div class="card-hd"><h3>Solicitudes</h3><button class="linkbtn" data-goto="solicitudes">Ver todas</button></div>
+                <div id="reqSummary"></div>
+              </div>
+              <div class="card">
+                <div class="card-hd"><h3>Próximas tareas</h3><button class="linkbtn" data-goto="tareas">Ver todas</button></div>
+                <div id="dashTasks"></div>
+              </div>
             </div>
           </div>
           <div class="dash-grid">
@@ -365,6 +371,6 @@
   <div class="atoast" id="atoast"></div>
 
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/owner.js?v=24"></script>
+  <script src="assets/owner.js?v=26"></script>
 </body>
 </html>
