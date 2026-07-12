@@ -626,6 +626,25 @@
     var b = baseUrl();
     return b + (b.indexOf("?") > -1 ? "&" : "?") + "mesa=" + encodeURIComponent(t.id);
   }
+  // Graba el enlace de la mesa en un chip NFC. Web NFC solo existe en Android/Chrome;
+  // en iPhone/PC se avisa cómo hacerlo con una app (el enlace ya está a la vista).
+  function writeNFC(url, label) {
+    if (!("NDEFReader" in window)) {
+      toast("Para grabar por web usa Android + Chrome. En iPhone usa una app NFC y pega el enlace.", "ti-nfc-off");
+      return;
+    }
+    try {
+      var ndef = new NDEFReader();
+      toast("Acerca el chip NFC al teléfono…", "ti-nfc");
+      ndef.write({ records: [{ recordType: "url", data: url }] }).then(function () {
+        toast("Chip de " + (label || "la mesa") + " grabado ✓", "ti-check");
+      }).catch(function (e) {
+        toast("No se pudo grabar: " + (e && e.message ? e.message : "intenta de nuevo"), "ti-alert-circle");
+      });
+    } catch (e) {
+      toast("No se pudo iniciar el NFC en este dispositivo.", "ti-alert-circle");
+    }
+  }
   function renderQR() {
     var host = $("qrGrid");
     if (!data.tables.length) {
@@ -637,8 +656,9 @@
         "<h4>" + esc(t.label) + "</h4>" +
         '<div class="qurl">…?mesa=' + esc(t.id) + "</div>" +
         '<div class="qacts">' +
-        '<button class="iconbtn" data-dl="' + t.id + '" aria-label="Descargar"><i class="ti ti-download"></i></button>' +
-        '<button class="iconbtn danger" data-rmt="' + t.id + '" aria-label="Quitar mesa"><i class="ti ti-trash"></i></button>' +
+        '<button class="iconbtn" data-dl="' + t.id + '" aria-label="Descargar QR" title="Descargar QR"><i class="ti ti-download"></i></button>' +
+        '<button class="iconbtn nfc" data-nfc="' + t.id + '" aria-label="Grabar chip NFC" title="Grabar chip NFC"><i class="ti ti-nfc"></i></button>' +
+        '<button class="iconbtn danger" data-rmt="' + t.id + '" aria-label="Quitar mesa" title="Quitar mesa"><i class="ti ti-trash"></i></button>' +
         "</div></div>";
     }).join("");
 
@@ -665,6 +685,12 @@
     });
     host.querySelectorAll("[data-dl]").forEach(function (b) {
       b.addEventListener("click", function () { downloadQR(b.getAttribute("data-dl")); });
+    });
+    host.querySelectorAll("[data-nfc]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = data.tables.find(function (x) { return x.id === b.getAttribute("data-nfc"); });
+        if (t) writeNFC(tableUrl(t), t.label);
+      });
     });
   }
   function qrDataUrl(id) {

@@ -9,7 +9,7 @@
   <title>WOY — Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="assets/tokens.css?v=11" />
-  <link rel="stylesheet" href="assets/admin.css?v=15" />
+  <link rel="stylesheet" href="assets/admin.css?v=16" />
 </head>
 <body class="admin">
   <div class="lock" id="lockScreen" hidden>
@@ -159,15 +159,16 @@
       <!-- Mesas y QR -->
       <section class="section" id="sec-mesas">
         <div class="page-hd">
-          <div><h1>Mesas y QR</h1><p>Genera un código QR por mesa. Cada uno abre el menú con la mesa ya seleccionada.</p></div>
+          <div><h1>Mesas y QR</h1><p>Un código QR por mesa que abre el menú con la mesa ya seleccionada. También puedes grabar el mismo enlace en un chip <b>NFC</b> (tocar el teléfono, sin escanear).</p></div>
           <button class="pill-btn ghost" id="printAll"><i class="ti ti-printer"></i>Imprimir todos</button>
         </div>
         <div class="card">
           <div class="field" style="max-width:520px">
             <label>Dirección base del menú (donde se publique el app)</label>
             <input type="text" id="baseUrl" placeholder="https://tudominio.com/index.html" />
-            <p class="hint" style="margin:6px 0 0">El QR codifica esta dirección + <code>?mesa=ID</code>. Cámbiala solo si publicas el menú en otro dominio.</p>
+            <p class="hint" style="margin:6px 0 0">El QR (y el chip NFC) codifican esta dirección + <code>?mesa=ID</code>. Cámbiala solo si publicas el menú en otro dominio.</p>
           </div>
+          <p class="hint" style="margin:10px 0 0"><i class="ti ti-nfc" style="vertical-align:-2px"></i> <b>NFC:</b> el botón <i class="ti ti-nfc" style="vertical-align:-2px"></i> de cada mesa graba el enlace en un chip. Grabar por web funciona en <b>Android + Chrome</b>; en iPhone se graba con una app NFC (el enlace ya está a la vista). Leerlo/tocarlo funciona en cualquier teléfono moderno.</p>
           <div class="rep" style="margin-top:8px;max-width:360px">
             <input type="text" id="newTableLabel" placeholder="Nueva mesa (ej. Terraza 1)" />
             <button class="iconbtn" id="addTable" aria-label="Agregar mesa"><i class="ti ti-plus"></i></button>
@@ -295,6 +296,6 @@
 
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/admin.js?v=16"></script>
+  <script src="assets/admin.js?v=17"></script>
 </body>
 </html>

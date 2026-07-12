@@ -1202,3 +1202,7 @@ body.admin {
   cursor: pointer;
   min-width: 200px;
 }
+
+/* Botón NFC en las tarjetas de mesa */
+.qacts .iconbtn.nfc { color: var(--accent); }
+.qacts .iconbtn.nfc:hover { background: var(--accent-soft); }
