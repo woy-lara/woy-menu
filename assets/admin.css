@@ -1206,3 +1206,7 @@ body.admin {
 /* Botón NFC en las tarjetas de mesa */
 .qacts .iconbtn.nfc { color: var(--accent); }
 .qacts .iconbtn.nfc:hover { background: var(--accent-soft); }
+
+/* Botón SVG en tarjetas de mesa */
+.qacts .svgbtn { font-size: 10.5px; font-weight: 800; letter-spacing: .03em; color: var(--ink-2); }
+.qacts .svgbtn:hover { background: var(--surface-2); color: var(--ink); }

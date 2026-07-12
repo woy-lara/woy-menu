@@ -37,7 +37,8 @@
       noTable: "Sin mesa",
       infoTitle: "Información", reservations: "Reservas",
       services: "Servicios especiales", follow: "Síguenos",
-      developedBy: "Desarrollado por", promoCta: "Ver menú"
+      developedBy: "Desarrollado por", promoCta: "Ver menú",
+      reviewTitle: "¿Te gustó tu visita?", reviewCta: "Déjanos tu reseña en Google"
     },
     en: {
       greeting: "What are you craving?",
@@ -59,7 +60,8 @@
       noTable: "No table",
       infoTitle: "Info", reservations: "Reservations",
       services: "Special services", follow: "Follow us",
-      developedBy: "Developed by", promoCta: "See menu"
+      developedBy: "Developed by", promoCta: "See menu",
+      reviewTitle: "Enjoyed your visit?", reviewCta: "Leave us a Google review"
     }
   };
   function t(k) { return (T[lang] && T[lang][k]) || T.es[k] || k; }
@@ -621,11 +623,17 @@
     }
     if (socials.length) rows += infoRow("ti-heart", t("follow"), '<div class="soc">' + socials.join("") + "</div>");
 
+    var review = inf.google
+      ? '<a class="info-review" href="' + esc(inf.google) + '" target="_blank" rel="noopener">' +
+        '<span class="ir-star">⭐</span><span class="ir-tx"><b>' + t("reviewTitle") + "</b><small>" + t("reviewCta") +
+        '</small></span><i class="ti ti-external-link"></i></a>'
+      : "";
+
     $("infoScroll").innerHTML =
       '<div class="cart-hd"><h2>' + t("infoTitle") + "</h2></div>" +
       '<div class="info-brand"><span>' + esc(data.brand.logoEmoji || "🍽️") + "</span>" +
       "<div><b>" + esc(data.brand.name || "") + "</b><small>" + esc(data.brand.tagline || "") + "</small></div></div>" +
-      rows +
+      rows + review +
       '<div class="foot" style="padding:18px 0 26px">' + t("developedBy") + " <b>WOY Projects</b></div>";
   }
   function openInfo() { renderInfo(); openSheet("infoSheet"); }

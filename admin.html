@@ -9,7 +9,7 @@
   <title>WOY — Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="assets/tokens.css?v=11" />
-  <link rel="stylesheet" href="assets/admin.css?v=16" />
+  <link rel="stylesheet" href="assets/admin.css?v=17" />
 </head>
 <body class="admin">
   <div class="lock" id="lockScreen" hidden>
@@ -111,6 +111,11 @@
           <div class="row2">
             <div class="field"><label>Instagram (usuario, sin @)</label><input type="text" id="infoIg" /></div>
             <div class="field"><label>Facebook (usuario o página)</label><input type="text" id="infoFb" /></div>
+          </div>
+          <div class="field">
+            <label>Enlace de reseñas de Google <span style="color:var(--ink-3);font-weight:400">(opcional)</span></label>
+            <input type="text" id="infoGoogle" placeholder="https://g.page/r/…  o  https://search.google.com/local/writereview?placeid=…" />
+            <p class="hint" style="margin:6px 0 0">Aparece como un botón amable “Déjanos tu reseña” en la pestaña Info del menú.</p>
           </div>
           <div class="field"><label>Servicios especiales / a domicilio</label><textarea id="infoServices"></textarea></div>
           <div class="field"><label>Servicios en inglés <span style="color:var(--ink-3);font-weight:400">(opcional)</span></label><textarea id="infoServicesEn"></textarea></div>
@@ -296,6 +301,6 @@
 
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
   <script src="assets/data.js?v=14"></script>
-  <script src="assets/admin.js?v=17"></script>
+  <script src="assets/admin.js?v=18"></script>
 </body>
 </html>

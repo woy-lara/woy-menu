@@ -69,7 +69,7 @@
     data.info = data.info || {};
     [
       ["infoPhone1", "phone1"], ["infoPhone2", "phone2"],
-      ["infoIg", "instagram"], ["infoFb", "facebook"],
+      ["infoIg", "instagram"], ["infoFb", "facebook"], ["infoGoogle", "google"],
       ["infoServices", "services"], ["infoServicesEn", "servicesEn"]
     ].forEach(function (pair) {
       $(pair[0]).value = data.info[pair[1]] || "";
@@ -598,6 +598,7 @@
   }
 
   /* ---------- Mesas y QR ---------- */
+  var qrObjs = {}; // instancias QRCode por mesa (para exportar SVG)
   function menuUrl() {
     var tid = window.WOY.tenantId();
     var u = location.origin + location.pathname.replace(/admin\.html$/, "") + "index.html";
@@ -656,7 +657,8 @@
         "<h4>" + esc(t.label) + "</h4>" +
         '<div class="qurl">…?mesa=' + esc(t.id) + "</div>" +
         '<div class="qacts">' +
-        '<button class="iconbtn" data-dl="' + t.id + '" aria-label="Descargar QR" title="Descargar QR"><i class="ti ti-download"></i></button>' +
+        '<button class="iconbtn" data-dl="' + t.id + '" aria-label="Descargar PNG" title="Descargar PNG"><i class="ti ti-download"></i></button>' +
+        '<button class="iconbtn svgbtn" data-svg="' + t.id + '" aria-label="Descargar SVG" title="Descargar SVG (vectorial)">SVG</button>' +
         '<button class="iconbtn nfc" data-nfc="' + t.id + '" aria-label="Grabar chip NFC" title="Grabar chip NFC"><i class="ti ti-nfc"></i></button>' +
         '<button class="iconbtn danger" data-rmt="' + t.id + '" aria-label="Quitar mesa" title="Quitar mesa"><i class="ti ti-trash"></i></button>' +
         "</div></div>";
@@ -666,7 +668,7 @@
       var box = $("q-" + t.id);
       box.innerHTML = "";
       if (typeof QRCode !== "undefined") {
-        new QRCode(box, {
+        qrObjs[t.id] = new QRCode(box, {
           text: tableUrl(t), width: 132, height: 132,
           colorDark: "#191512", colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.M
@@ -686,6 +688,9 @@
     host.querySelectorAll("[data-dl]").forEach(function (b) {
       b.addEventListener("click", function () { downloadQR(b.getAttribute("data-dl")); });
     });
+    host.querySelectorAll("[data-svg]").forEach(function (b) {
+      b.addEventListener("click", function () { downloadQRSVG(b.getAttribute("data-svg")); });
+    });
     host.querySelectorAll("[data-nfc]").forEach(function (b) {
       b.addEventListener("click", function () {
         var t = data.tables.find(function (x) { return x.id === b.getAttribute("data-nfc"); });
@@ -699,6 +704,34 @@
     if (canvas) return canvas.toDataURL("image/png");
     var img = box.querySelector("img");
     return img ? img.src : "";
+  }
+  // Exporta el QR como SVG vectorial (nítido a cualquier tamaño de impresión)
+  function downloadQRSVG(id) {
+    var t = data.tables.find(function (x) { return x.id === id; });
+    var q = qrObjs[id];
+    var model = q && q._oQRCode;
+    if (!model || typeof model.isDark !== "function") {
+      toast("Descarga el QR en SVG desde un navegador con la librería lista. Prueba de nuevo.", "ti-alert-circle");
+      return;
+    }
+    var n = model.moduleCount, cell = 10, margin = cell * 2, size = n * cell + margin * 2;
+    var rects = "";
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        if (model.isDark(r, c)) rects += '<rect x="' + (margin + c * cell) + '" y="' + (margin + r * cell) + '" width="' + cell + '" height="' + cell + '"/>';
+      }
+    }
+    var svg = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
+      '<rect width="' + size + '" height="' + size + '" fill="#ffffff"/>' +
+      '<g fill="#191512">' + rects + "</g></svg>";
+    var blob = new Blob([svg], { type: "image/svg+xml" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "woy-qr-" + (t ? t.label.replace(/\s+/g, "-").toLowerCase() : id) + ".svg";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
+    toast("QR en SVG descargado", "ti-download");
   }
   function downloadQR(id) {
     var t = data.tables.find(function (x) { return x.id === id; });
