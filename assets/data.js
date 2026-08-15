@@ -725,8 +725,11 @@
       // de cada cliente en el panel del dueño.
       try { data.updatedAt = new Date().toISOString(); } catch (e2) {}
       global.localStorage.setItem(keyFor(tid), JSON.stringify(data));
+      return true;
     } catch (e) {
-      /* almacenamiento lleno o bloqueado: la beta sigue en memoria */
+      // Almacenamiento lleno o bloqueado. Devolvemos false para que quien
+      // llame avise al usuario en vez de mentir con un "guardado" falso.
+      return false;
     }
   }
 
@@ -762,6 +765,148 @@
     { id: "halal", label: "Halal 100%", labelEn: "Halal 100%", emoji: "\u262a\ufe0f" }
   ];
 
+  /* ============================================================
+     Helpers de seguridad (compartidos por menú, admin y dueño)
+     ============================================================ */
+
+  /* Color válido: solo # + 3/4/6/8 hex. Cualquier otra cosa (incluido un
+     intento de romper un atributo style="") cae al color de respaldo.
+     Bloquea el XSS por theme.accent en un atributo style. */
+  function safeColor(v, fallback) {
+    fallback = fallback || "#4a5d3a";
+    return (typeof v === "string" && /^#[0-9a-f]{3,8}$/i.test(v.trim()))
+      ? v.trim() : fallback;
+  }
+
+  /* URL válida para un href público: solo http(s). Bloquea javascript:,
+     data:, vbscript:, etc. Devuelve "" si no es segura. */
+  function safeUrl(v) {
+    if (typeof v !== "string" || !v.trim()) return "";
+    var s = v.trim();
+    // Sin esquema (p.ej. "g.page/mi-resto") lo tratamos como https, para que
+    // no quede como enlace relativo del propio sitio.
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) {
+      if (/^[\w.-]+\.[a-z]{2,}([\/?#].*)?$/i.test(s)) s = "https://" + s;
+      else return "";
+    }
+    try {
+      var u = new global.URL(s);
+      return (u.protocol === "http:" || u.protocol === "https:") ? s : "";
+    } catch (e) { return ""; }
+  }
+
+  /* Número seguro: convierte a Number finito o al respaldo. Evita que un
+     respaldo trucado ponga HTML donde el código espera un número. */
+  function safeNum(v, fallback) {
+    var n = typeof v === "number" ? v : parseFloat(v);
+    return isFinite(n) ? n : (fallback || 0);
+  }
+
+  /* id seguro: solo minúsculas, números y guiones. */
+  function safeId(v) {
+    return (typeof v === "string" ? v : "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+  }
+
+  /* Saneo de un menú importado (restaurar respaldo). No confía en NADA del
+     archivo: coacciona tipos, filtra credenciales y valida colores/números.
+     Devuelve un objeto limpio o null si el formato es inválido. */
+  function sanitizeMenu(raw, currentSecurity) {
+    if (!raw || typeof raw !== "object" || !Array.isArray(raw.dishes)) return null;
+    var clean = {};
+
+    // Marca
+    var b = raw.brand || {};
+    clean.brand = {
+      name: String(b.name || "Mi Restaurante").slice(0, 120),
+      tagline: String(b.tagline || "").slice(0, 200),
+      logoEmoji: String(b.logoEmoji || "🍽️").slice(0, 8)
+    };
+    // Tema (colores validados)
+    var t = raw.theme || {};
+    clean.theme = {
+      accent: safeColor(t.accent, "#c2410c"),
+      accent2: safeColor(t.accent2, "#f59e0b"),
+      font: t.font === "serif" ? "serif" : "sans"
+    };
+    // Ajustes
+    var st = raw.settings || {};
+    clean.settings = {
+      defaultLang: st.defaultLang === "en" ? "en" : "es",
+      currency: String(st.currency || "$").slice(0, 4)
+    };
+    // Info (la reseña de Google solo si es http(s))
+    var inf = raw.info || {};
+    clean.info = {
+      phone1: String(inf.phone1 || "").slice(0, 40),
+      phone2: String(inf.phone2 || "").slice(0, 40),
+      instagram: String(inf.instagram || "").slice(0, 80),
+      facebook: String(inf.facebook || "").slice(0, 80),
+      services: String(inf.services || "").slice(0, 600),
+      servicesEn: String(inf.servicesEn || "").slice(0, 600),
+      google: safeUrl(inf.google)
+    };
+    // Promo
+    var p = raw.promo || {};
+    clean.promo = {
+      enabled: !!p.enabled,
+      emoji: String(p.emoji || "🎉").slice(0, 8),
+      title: String(p.title || "").slice(0, 120),
+      titleEn: String(p.titleEn || "").slice(0, 120),
+      text: String(p.text || "").slice(0, 400),
+      textEn: String(p.textEn || "").slice(0, 400),
+      media: p.media && typeof p.media === "object" ? p.media : undefined
+    };
+    // Categorías
+    clean.categories = (Array.isArray(raw.categories) ? raw.categories : []).map(function (c) {
+      c = c || {};
+      return {
+        id: safeId(c.id) || uid("cat"),
+        name: String(c.name || "").slice(0, 80),
+        nameEn: String(c.nameEn || "").slice(0, 80),
+        emoji: String(c.emoji || "").slice(0, 8)
+      };
+    });
+    // Mesas
+    clean.tables = (Array.isArray(raw.tables) ? raw.tables : []).map(function (m) {
+      m = m || {};
+      return { id: safeId(m.id) || uid("t"), label: String(m.label || "").slice(0, 40) };
+    });
+    // Platos: los campos numéricos se fuerzan a número (aquí estaba el hueco).
+    clean.dishes = raw.dishes.map(function (d) {
+      d = d || {};
+      return {
+        id: safeId(d.id) || uid("d"),
+        catId: safeId(d.catId),
+        name: String(d.name || "").slice(0, 120),
+        nameEn: String(d.nameEn || "").slice(0, 120),
+        desc: String(d.desc || "").slice(0, 800),
+        descEn: String(d.descEn || "").slice(0, 800),
+        price: safeNum(d.price),
+        emoji: String(d.emoji || "").slice(0, 8),
+        img: String(d.img || "").slice(0, 8),
+        kcal: safeNum(d.kcal), protein: safeNum(d.protein),
+        carbs: safeNum(d.carbs), fat: safeNum(d.fat),
+        timeMin: safeNum(d.timeMin), rating: safeNum(d.rating),
+        available: d.available !== false,
+        featured: !!d.featured,
+        tags: Array.isArray(d.tags) ? d.tags.map(safeId).filter(Boolean) : [],
+        ingredients: Array.isArray(d.ingredients) ? d.ingredients : [],
+        sizes: Array.isArray(d.sizes) ? d.sizes.map(function (s) {
+          s = s || {};
+          return { name: String(s.name || "").slice(0, 60), nameEn: String(s.nameEn || "").slice(0, 60), delta: safeNum(s.delta) };
+        }) : [],
+        mods: Array.isArray(d.mods) ? d.mods.map(function (m) {
+          m = m || {};
+          return { name: String(m.name || "").slice(0, 60), nameEn: String(m.nameEn || "").slice(0, 60), price: safeNum(m.price) };
+        }) : [],
+        media: Array.isArray(d.media) ? d.media : []
+      };
+    });
+    // Credenciales: NUNCA se importan. Se conservan las que ya existen.
+    clean.security = currentSecurity || {};
+    return clean;
+  }
+
   global.WOY = {
     KEY: KEY,
     TAGS: TAGS,
@@ -774,6 +919,11 @@
     tenantId: tenantId,
     keyFor: keyFor,
     loadClients: loadClients,
-    saveClients: saveClients
+    saveClients: saveClients,
+    safeColor: safeColor,
+    safeUrl: safeUrl,
+    safeNum: safeNum,
+    safeId: safeId,
+    sanitizeMenu: sanitizeMenu
   };
 })(window);

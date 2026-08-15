@@ -623,8 +623,11 @@
     }
     if (socials.length) rows += infoRow("ti-heart", t("follow"), '<div class="soc">' + socials.join("") + "</div>");
 
-    var review = inf.google
-      ? '<a class="info-review" href="' + esc(inf.google) + '" target="_blank" rel="noopener">' +
+    // safeUrl() solo deja pasar http(s): bloquea un href "javascript:" que
+    // ejecutaría código en el navegador de cada comensal que toque el botón.
+    var reviewUrl = window.WOY.safeUrl(inf.google);
+    var review = reviewUrl
+      ? '<a class="info-review" href="' + esc(reviewUrl) + '" target="_blank" rel="noopener">' +
         '<span class="ir-star">⭐</span><span class="ir-tx"><b>' + t("reviewTitle") + "</b><small>" + t("reviewCta") +
         '</small></span><i class="ti ti-external-link"></i></a>'
       : "";

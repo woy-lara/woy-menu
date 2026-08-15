@@ -30,6 +30,11 @@
     });
   }
   function sha256(str) {
+    // crypto.subtle solo existe en HTTPS o localhost. Si no está, rechazamos
+    // con un mensaje claro en vez de un error sin explicación en el login.
+    if (!window.crypto || !window.crypto.subtle) {
+      return Promise.reject(new Error("Se requiere HTTPS para el candado."));
+    }
     return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (buf) {
       return Array.prototype.map.call(new Uint8Array(buf), function (b) {
         return b.toString(16).padStart(2, "0");
@@ -159,6 +164,9 @@
           $("ownerShell").hidden = false;
           done();
         } else { $("ownErr").hidden = false; }
+      }).catch(function () {
+        $("ownErr").textContent = "Se requiere una conexión segura (HTTPS) para entrar.";
+        $("ownErr").hidden = false;
       });
     }
     $("ownBtn").addEventListener("click", submit);
@@ -456,13 +464,17 @@
     });
     refreshDots(list);
   }
-  // Color de marca de cada cliente (para el banner de su tarjeta)
+  // Color de marca de cada cliente (para el banner de su tarjeta).
+  // safeColor() garantiza que SOLO salga un color hex válido: el tema del
+  // cliente lo controla el restaurante, así que sin este filtro podría
+  // inyectar HTML en este panel (escalada restaurante → dueño).
   function clientAccent(c) {
+    var fallback = c.isDefault ? "#4a5d3a" : "#c2410c";
     try {
       var raw = localStorage.getItem(window.WOY.keyFor(c.isDefault ? null : c.slug));
-      if (raw) { var t = JSON.parse(raw).theme; if (t && t.accent) return t.accent; }
+      if (raw) { var t = JSON.parse(raw).theme; if (t && t.accent) return window.WOY.safeColor(t.accent, fallback); }
     } catch (e) {}
-    return c.isDefault ? "#4a5d3a" : "#c2410c";
+    return fallback;
   }
   // Fila de enlace con etiqueta clara + acciones Abrir / Copiar / Enviar
   function linkRow(url, label, icon) {

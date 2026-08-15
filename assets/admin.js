@@ -14,7 +14,13 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
     });
   }
-  function save() { window.WOY.save(data); }
+  // Devuelve true/false. Si el navegador se llenó (fotos pesadas), avisa en
+  // vez de dejar creer que se guardó y perder el trabajo al recargar.
+  function save() {
+    var ok = window.WOY.save(data);
+    if (!ok) toast("No se pudo guardar: el navegador está lleno. Borra fotos pesadas o exporta un respaldo.", "ti-alert-circle");
+    return ok;
+  }
 
   var toastT;
   function toast(msg, icon) {
@@ -79,6 +85,21 @@
         data.info[pair[1]] = v;
         save();
       });
+      // El enlace de Google es un href público: al salir del campo lo
+      // normalizamos con safeUrl (solo http(s)). Si escribió algo que no es
+      // un enlace válido, lo avisamos y lo limpiamos para no publicarlo.
+      if (pair[1] === "google") {
+        $(pair[0]).addEventListener("blur", function (e) {
+          var raw = e.target.value.trim();
+          if (!raw) { data.info.google = ""; save(); return; }
+          var safe = window.WOY.safeUrl(raw);
+          if (!safe) {
+            toast("Ese enlace no es válido (usa https://...)", "ti-alert-circle");
+            e.target.value = ""; data.info.google = "";
+          } else { e.target.value = safe; data.info.google = safe; }
+          save();
+        });
+      }
     });
   }
 
@@ -522,8 +543,10 @@
       obj.id = window.WOY.uid("d"); obj.rating = 0;
       data.dishes.push(obj);
     }
-    save(); renderDishes(); closeDish();
-    toast(editing ? "Plato actualizado" : "Plato creado", "ti-check");
+    // Solo confirmamos éxito si realmente se guardó (save() ya avisa si no).
+    var okSave = save();
+    renderDishes(); closeDish();
+    if (okSave) toast(editing ? "Plato actualizado" : "Plato creado", "ti-check");
   }
 
   function initDishModal() {
@@ -777,7 +800,7 @@
       if (!u) { toast("El usuario no puede quedar vacío", "ti-alert-circle"); return; }
       data.security.user = u;
       if (p) {
-        if (p.length < 4) { toast("La contraseña debe tener al menos 4 caracteres", "ti-alert-circle"); return; }
+        if (p.length < 8) { toast("La contraseña debe tener al menos 8 caracteres", "ti-alert-circle"); return; }
         sha256(p, function (h) {
           data.security.passHash = h; save();
           $("cfgPass").value = "";
@@ -804,7 +827,10 @@
     });
 
     $("cfgExport").addEventListener("click", function () {
-      var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      // El respaldo NO lleva credenciales: exponer user/passHash en un archivo
+      // que el dueño comparte es una fuga directa. Se excluye security.
+      var out = {}; for (var k in data) { if (k !== "security") out[k] = data[k]; }
+      var blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
       var a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = "woy-menu-" + (window.WOY.tenantId() || "principal") + ".json";
@@ -820,9 +846,13 @@
       r.onload = function (ev) {
         try {
           var obj = JSON.parse(ev.target.result);
-          if (!obj || !Array.isArray(obj.dishes)) throw new Error("formato");
-          if (!confirm("Esto reemplazará el menú actual con el del respaldo. ¿Continuar?")) return;
-          window.WOY.save(obj);
+          // sanitizeMenu no confía en NADA del archivo: coacciona tipos,
+          // valida colores/URLs y CONSERVA las credenciales actuales (no las
+          // deja sobrescribir). Cierra el XSS por respaldo envenenado.
+          var clean = window.WOY.sanitizeMenu(obj, data.security);
+          if (!clean) throw new Error("formato");
+          if (!confirm("Esto reemplazará el menú actual con el del respaldo. Tu usuario y contraseña NO cambian. ¿Continuar?")) return;
+          if (!window.WOY.save(clean)) { toast("No se pudo guardar: espacio del navegador lleno", "ti-alert-circle"); return; }
           toast("Respaldo importado", "ti-check");
           setTimeout(function () { location.reload(); }, 700);
         } catch (err) { toast("Archivo inválido: no es un respaldo de WOY", "ti-alert-circle"); }
@@ -839,6 +869,12 @@
 
   /* ---------- Candado de acceso ---------- */
   function sha256(str, cb) {
+    // crypto.subtle solo existe en contexto seguro (HTTPS o localhost). Si no
+    // está, avisamos en vez de tronar el botón de entrar sin explicación.
+    if (!window.crypto || !window.crypto.subtle) {
+      toast("Este navegador o conexión no admite el candado (se requiere HTTPS)", "ti-alert-circle");
+      return;
+    }
     crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (buf) {
       cb(Array.prototype.map.call(new Uint8Array(buf), function (b) {
         return b.toString(16).padStart(2, "0");
@@ -880,7 +916,7 @@
       if (!p) return;
       if (creating) {
         if (!u) return fail("Escribe un usuario.");
-        if (p.length < 4) return fail("La contraseña debe tener al menos 4 caracteres.");
+        if (p.length < 8) return fail("La contraseña debe tener al menos 8 caracteres.");
         sha256(p, function (h) { sec.user = u; sec.passHash = h; save(); unlock(); });
       } else {
         sha256(p, function (h) {
@@ -899,20 +935,25 @@
   /* ---------- Init ---------- */
   function boot() {
     applyTheme();
-    initLock(function () {});
-    var vm = document.querySelector(".side-foot a");
-    if (vm) vm.setAttribute("href", menuUrl());
-    initNav();
-    initDishModal();
-    initConfig();
-    initBrand();
-    initMarketing();
-    initCatAdd();
-    initTables();
-    initCatalogTools();
-    renderCats();
-    renderDishes();
-    renderQR();
+    // Todo el panel (datos, usuario, precios, QR) se construye SOLO tras un
+    // login correcto. Antes, el candado era decorativo: los datos ya estaban
+    // en el DOM y se veían saltándose la pantalla. Ahora initLock llama a
+    // este callback únicamente cuando la contraseña es correcta.
+    initLock(function () {
+      var vm = document.querySelector(".side-foot a");
+      if (vm) vm.setAttribute("href", menuUrl());
+      initNav();
+      initDishModal();
+      initConfig();
+      initBrand();
+      initMarketing();
+      initCatAdd();
+      initTables();
+      initCatalogTools();
+      renderCats();
+      renderDishes();
+      renderQR();
+    });
   }
 
   function initCatalogTools() {
