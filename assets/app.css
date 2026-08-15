@@ -7,7 +7,12 @@
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0 auto;
-  background: var(--bg);
+  /* Halo cálido de la marca tras el saludo: da profundidad sin restar
+     legibilidad (se desvanece muy rápido a blanco). */
+  background:
+    radial-gradient(115% 42% at 50% -8%,
+      color-mix(in srgb, var(--accent) 8%, #fff) 0%, transparent 58%),
+    var(--bg);
   box-shadow: var(--shadow);
   overflow: clip;
   padding-bottom: 96px; /* espacio para bottom nav */
@@ -26,7 +31,7 @@
 /* ---------- Header (estático: solo las categorías flotan) ---------- */
 .hd {
   padding: 18px 20px 14px;
-  background: var(--bg);
+  background: transparent; /* deja ver el halo cálido de .app */
 }
 .hd-top {
   display: flex;
@@ -314,6 +319,20 @@
   display: grid;
   place-items: center;
   font-size: 92px;
+  /* Sin foto: en vez de gris plano, un lienzo cálido con la marca. La <img>
+     (cuando hay foto real) se dibuja encima y tapa este degradado. */
+  background:
+    radial-gradient(130% 80% at 26% 18%,
+      color-mix(in srgb, var(--accent) 24%, #fff) 0%, transparent 56%),
+    radial-gradient(120% 90% at 88% 96%,
+      color-mix(in srgb, var(--accent-2) 46%, #fff) 0%, transparent 52%),
+    linear-gradient(150deg,
+      color-mix(in srgb, var(--accent) 78%, #2a1a12) 0%,
+      color-mix(in srgb, var(--accent) 58%, #ffd9a0) 100%);
+}
+/* El emoji sobre el lienzo cálido: leve resplandor para que no flote plano. */
+.fcard span.fbg {
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.22));
 }
 .fcard::before {
   content: "";
@@ -1377,3 +1396,22 @@ html.font-serif .hello h1 {
 .ir-tx b { display: block; font-size: 15px; font-weight: 600; }
 .ir-tx small { display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 1px; }
 .info-review .ti { color: var(--ink-3); font-size: 18px; }
+
+/* ---------- Coreografía de entrada ----------
+   Un solo revelado escalonado al cargar: da sensación de producto cuidado.
+   Se apaga por completo si el usuario prefiere menos movimiento. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes woyRise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  .hd, #promo, .cats, #featWrap, #listHd, .list {
+    animation: woyRise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .hd { animation-delay: 0.02s; }
+  #promo { animation-delay: 0.08s; }
+  .cats { animation-delay: 0.14s; }
+  #featWrap { animation-delay: 0.2s; }
+  #listHd { animation-delay: 0.26s; }
+  .list { animation-delay: 0.3s; }
+}
