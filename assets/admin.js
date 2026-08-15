@@ -8,12 +8,8 @@
 
   /* ---------- Utilidades ---------- */
   function $(id) { return document.getElementById(id); }
-  function money(n) { return ((data.settings && data.settings.currency) || "$") + (Math.round(n * 100) / 100).toFixed(2); }
-  function esc(s) {
-    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-    });
-  }
+  function money(n) { return window.WOY.money(n, (data.settings && data.settings.currency) || "$"); }
+  var esc = window.WOY.esc;
   // Devuelve true/false. Si el navegador se llenó (fotos pesadas), avisa en
   // vez de dejar creer que se guardó y perder el trabajo al recargar.
   function save() {
@@ -600,25 +596,7 @@
 
   // Redimensiona a máx. 1000px y comprime a JPEG para cuidar el
   // almacenamiento del navegador (la beta no tiene servidor).
-  function compressImage(file, cb) {
-    var r = new FileReader();
-    r.onload = function (ev) {
-      var im = new Image();
-      im.onload = function () {
-        var MAX = 1000, w = im.width, h = im.height;
-        if (w > MAX || h > MAX) {
-          var k = Math.min(MAX / w, MAX / h);
-          w = Math.round(w * k); h = Math.round(h * k);
-        }
-        var cv = document.createElement("canvas");
-        cv.width = w; cv.height = h;
-        cv.getContext("2d").drawImage(im, 0, 0, w, h);
-        cb(cv.toDataURL("image/jpeg", 0.82));
-      };
-      im.src = ev.target.result;
-    };
-    r.readAsDataURL(file);
-  }
+  function compressImage(file, cb) { return window.WOY.compressImage(file, 1000, cb); }
 
   /* ---------- Mesas y QR ---------- */
   var qrObjs = {}; // instancias QRCode por mesa (para exportar SVG)

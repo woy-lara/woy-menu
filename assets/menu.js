@@ -87,18 +87,14 @@
   /* ---------- Utilidades ---------- */
   function $(id) { return document.getElementById(id); }
   var CURRENCY = (data.settings && data.settings.currency) || "$";
-  function money(n) { return CURRENCY + (Math.round(n * 100) / 100).toFixed(2); }
+  function money(n) { return window.WOY.money(n, CURRENCY); }
   function el(tag, cls, html) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
     if (html != null) e.innerHTML = html;
     return e;
   }
-  function esc(s) {
-    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-    });
-  }
+  var esc = window.WOY.esc;
   function tagDef(id) {
     return (window.WOY.TAGS || []).find(function (t) { return t.id === id; });
   }

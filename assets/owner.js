@@ -24,11 +24,7 @@
 
   /* ---------- Utilidades ---------- */
   function $(id) { return document.getElementById(id); }
-  function esc(s) {
-    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-    });
-  }
+  var esc = window.WOY.esc;
   function sha256(str) {
     // crypto.subtle solo existe en HTTPS o localhost. Si no está, rechazamos
     // con un mensaje claro en vez de un error sin explicación en el login.
@@ -47,7 +43,7 @@
       .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
   }
   function baseUrl() { return location.origin + location.pathname.replace(/owner\.html$/, ""); }
-  function money(n) { return "$" + (Math.round((+n || 0) * 100) / 100).toFixed(2); }
+  function money(n) { return window.WOY.money(n); }
   function pad(n) { return String(n).padStart(2, "0"); }
   function isoOf(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
   function todayISO() { return isoOf(new Date()); }
@@ -500,22 +496,7 @@
   var editBanner = null, editLogo = null, editEmoji = "🍽️";
 
   // Redimensiona/comprime a JPEG para cuidar el almacenamiento del navegador
-  function compressImage(file, max, cb) {
-    var r = new FileReader();
-    r.onload = function (ev) {
-      var im = new Image();
-      im.onload = function () {
-        var w = im.width, h = im.height;
-        if (w > max || h > max) { var k = Math.min(max / w, max / h); w = Math.round(w * k); h = Math.round(h * k); }
-        var cv = document.createElement("canvas");
-        cv.width = w; cv.height = h;
-        cv.getContext("2d").drawImage(im, 0, 0, w, h);
-        cb(cv.toDataURL("image/jpeg", 0.82));
-      };
-      im.src = ev.target.result;
-    };
-    r.readAsDataURL(file);
-  }
+  var compressImage = window.WOY.compressImage;
   function renderClImages() {
     var bp = $("clBannerPrev");
     if (editBanner) { bp.style.backgroundImage = "url(" + editBanner + ")"; bp.classList.add("has"); bp.innerHTML = ""; }
@@ -1165,10 +1146,6 @@
   }
 
   /* ---------- Init ---------- */
-  function bindModal(scrimId, closeIds) {
-    closeIds.forEach(function (id) { var e = $(id); if (e) e.addEventListener("click", function () { $(scrimId).classList.remove("is-open"); }); });
-    $(scrimId).addEventListener("click", function (e) { if (e.target === $(scrimId)) $(scrimId).classList.remove("is-open"); });
-  }
   function boot() {
     initLock(function () {
       ensureDefaultClient();

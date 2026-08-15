@@ -807,6 +807,43 @@
     return (typeof v === "string" ? v : "").toLowerCase().replace(/[^a-z0-9-]/g, "");
   }
 
+  /* ---- Helpers de UI compartidos (antes duplicados en los 3 archivos) ---- */
+
+  /* Escapa texto para inyectarlo seguro en HTML (atributos con comillas
+     dobles). Única fuente de verdad; menu/admin/owner lo aliasan. */
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  /* Formatea dinero con la moneda dada (guard: nunca NaN). */
+  function money(n, currency) {
+    return (currency || "$") + (Math.round((+n || 0) * 100) / 100).toFixed(2);
+  }
+
+  /* Comprime una imagen a JPEG ≤ max px (lado mayor). Callback con dataURL. */
+  function compressImage(file, max, cb) {
+    max = max || 1000;
+    var r = new FileReader();
+    r.onload = function (ev) {
+      var im = new Image();
+      im.onload = function () {
+        var w = im.width, h = im.height;
+        if (w > max || h > max) {
+          var k = Math.min(max / w, max / h);
+          w = Math.round(w * k); h = Math.round(h * k);
+        }
+        var cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(im, 0, 0, w, h);
+        cb(cv.toDataURL("image/jpeg", 0.82));
+      };
+      im.src = ev.target.result;
+    };
+    r.readAsDataURL(file);
+  }
+
   /* Saneo de un menú importado (restaurar respaldo). No confía en NADA del
      archivo: coacciona tipos, filtra credenciales y valida colores/números.
      Devuelve un objeto limpio o null si el formato es inválido. */
@@ -924,6 +961,9 @@
     safeUrl: safeUrl,
     safeNum: safeNum,
     safeId: safeId,
-    sanitizeMenu: sanitizeMenu
+    sanitizeMenu: sanitizeMenu,
+    esc: esc,
+    money: money,
+    compressImage: compressImage
   };
 })(window);
