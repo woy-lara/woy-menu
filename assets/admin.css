@@ -684,6 +684,7 @@ body.admin {
   .shell {
     flex-direction: column;
   }
+  /* Tira superior delgada: solo el logo del restaurante + "Ver menú". */
   .side {
     flex: none;
     width: 100%;
@@ -691,44 +692,75 @@ body.admin {
     position: sticky;
     top: 0;
     z-index: 50;
-    padding: 12px;
+    padding: 10px 14px;
     flex-direction: row;
     align-items: center;
-    gap: 6px;
-    overflow-x: auto;
+    gap: 10px;
   }
   .side .logo {
-    padding: 6px 10px 6px 4px;
-    flex: 0 0 auto;
+    padding: 2px 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 17px;
   }
   .side .logo small {
     display: none;
   }
-  .side nav {
-    flex-direction: row;
-    flex: 1;
-  }
-  .side nav button {
-    flex-direction: column;
-    gap: 3px;
-    padding: 8px 12px;
-    font-size: 11px;
+  .side .logo span b {
     white-space: nowrap;
-  }
-  .side nav button span.lbl {
-    display: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
   }
   .side .side-foot {
     flex-direction: row;
     margin-top: 0;
     flex: 0 0 auto;
   }
+  .side .side-foot .side-credit {
+    display: none;
+  }
   .side .side-foot a span,
   .side .side-foot button span {
     display: none;
   }
+
+  /* La navegación pasa a ser una barra INFERIOR fija: siempre visible,
+     al alcance del pulgar, con ícono + etiqueta (patrón del menú comensal). */
+  .side nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    flex-direction: row;
+    gap: 2px;
+    background: var(--ink);
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -10px 26px -14px rgba(0, 0, 0, 0.55);
+  }
+  .side nav button {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 4px;
+    font-size: 10.5px;
+    white-space: nowrap;
+    border-radius: 13px;
+  }
+  .side nav button .ti {
+    font-size: 21px;
+  }
+  .side nav button span.lbl {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .main {
-    padding: 20px 16px 60px;
+    padding: 20px 16px 96px; /* espacio para la barra inferior fija */
   }
   .row2,
   .row3 {
