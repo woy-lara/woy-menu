@@ -132,10 +132,12 @@ const server = http.createServer((req, res) => {
         if (!yo) return error(res, 400, 'Primero debes crear tu acceso.');
         const inv = db.invitaciones.find(i => i.code === cuerpo.p_code && !i.used_at);
         if (!inv) return error(res, 400, 'Esta invitacion no es valida, ya se uso o vencio.');
-        if (!db.ligas.some(l => l.user_id === yo.id && l.client_id === inv.client_id))
-          db.ligas.push({ user_id: yo.id, client_id: inv.client_id, role: 'admin' });
+        // Marcar como usada ANTES de ligar (igual que el UPDATE ... RETURNING
+        // del SQL real, que hace la comprobación y la marca en un solo paso).
         inv.used_at = new Date().toISOString();
         inv.used_by = yo.id;
+        if (!db.ligas.some(l => l.user_id === yo.id && l.client_id === inv.client_id))
+          db.ligas.push({ user_id: yo.id, client_id: inv.client_id, role: 'admin' });
         return responder(res, 200, inv.client_id);
       }
 

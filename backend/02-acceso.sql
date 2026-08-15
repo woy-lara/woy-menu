@@ -87,17 +87,20 @@ begin
   if auth.uid() is null then
     raise exception 'Primero debes crear tu acceso.';
   end if;
-  select client_id into v_client from client_invites
-    where code = p_code and used_at is null and expires_at > now();
+  -- Comprobar y marcar como usada EN UN SOLO PASO. Si se hiciera en dos
+  -- (mirar y luego marcar), dos personas que abran el mismo enlace a la vez
+  -- podrían pasar las dos — por ejemplo si alguien intercepta el enlace y lo
+  -- canjea al mismo tiempo que el restaurante. Así solo gana una.
+  update client_invites
+    set used_at = now(), used_by = auth.uid()
+    where code = p_code and used_at is null and expires_at > now()
+    returning client_id into v_client;
   if v_client is null then
     raise exception 'Esta invitación no es válida, ya se usó o venció.';
   end if;
   insert into client_users (user_id, client_id, role)
     values (auth.uid(), v_client, 'admin')
     on conflict (user_id, client_id) do nothing;
-  update client_invites
-    set used_at = now(), used_by = auth.uid()
-    where code = p_code;
   return v_client;
 end;
 $fn$;

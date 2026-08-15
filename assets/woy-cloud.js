@@ -152,9 +152,15 @@
 
   function salir() {
     var s = leerSesion();
-    guardarSesion(null);
     if (!s) return Promise.resolve();
-    return pedir("/auth/v1/logout", { metodo: "POST" }).catch(function () {});
+    // OJO: hay que mandar el token del usuario ANTES de borrarlo. Si se borra
+    // primero, la petición sale con la llave pública y el servidor no revoca
+    // nada: el "cerrar sesión" sería solo de mentira en este navegador.
+    return fetch(CFG.url + "/auth/v1/logout", {
+      method: "POST",
+      headers: { apikey: CFG.key, Authorization: "Bearer " + s.access_token }
+    }).catch(function () {})
+      .then(function () { guardarSesion(null); });
   }
 
   /* Enviar enlace para restablecer contraseña (lo maneja Supabase por correo). */

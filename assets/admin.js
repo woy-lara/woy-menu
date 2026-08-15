@@ -32,7 +32,15 @@
       marcarNube("subiendo");
       WOYCloud.guardarMenu(nube.id, sinCredenciales(data))
         .then(function () { marcarNube("ok"); })
-        .catch(function () { marcarNube("error"); })
+        .catch(function () {
+          // Distinguimos "sin internet" de "se venció tu sesión": en el segundo
+          // caso hay que avisar de verdad, porque los cambios se quedarían solo
+          // en este navegador y el restaurante creería que están publicados.
+          if (!WOYCloud.haySesion()) {
+            marcarNube("sesion");
+            toast("Tu sesión venció. Vuelve a entrar para publicar los cambios.", "ti-alert-circle");
+          } else { marcarNube("error"); }
+        })
         .then(function () { subiendo = false; });
     }, 800);
   }
@@ -44,6 +52,7 @@
     e.hidden = false;
     if (estado === "subiendo") { e.className = "cloud-state is-sync"; e.innerHTML = '<i class="ti ti-cloud-upload"></i>Guardando…'; }
     else if (estado === "ok") { e.className = "cloud-state is-ok"; e.innerHTML = '<i class="ti ti-cloud-check"></i>Guardado en la nube'; }
+    else if (estado === "sesion") { e.className = "cloud-state is-err"; e.innerHTML = '<i class="ti ti-lock-open"></i>Sesión vencida — vuelve a entrar'; }
     else { e.className = "cloud-state is-err"; e.innerHTML = '<i class="ti ti-cloud-off"></i>Sin conexión — guardado aquí'; }
   }
 
