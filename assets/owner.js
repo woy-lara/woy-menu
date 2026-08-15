@@ -434,6 +434,7 @@
           (billable(c) && !b.paid
             ? '<button class="pill-btn sm" data-pay="' + esc(slug) + '"><i class="ti ti-cash"></i>Registrar pago</button>'
             : '<button class="pill-btn ghost sm" data-hist="' + esc(slug) + '"><i class="ti ti-receipt"></i>Recibos</button>') +
+          (isDef ? "" : '<button class="pill-btn ghost sm" data-inv="' + esc(slug) + '"><i class="ti ti-key"></i>Dar acceso</button>') +
           '<span style="flex:1"></span>' +
           '<button class="pill-btn ghost sm" data-edit="' + esc(slug) + '"><i class="ti ti-pencil"></i>Editar</button>' +
           (isDef ? "" : '<button class="pill-btn ghost sm danger" data-del="' + esc(slug) + '"><i class="ti ti-trash"></i></button>') +
@@ -457,6 +458,9 @@
     });
     grid.querySelectorAll("[data-send]").forEach(function (b) {
       b.addEventListener("click", function () { sendLink(b.getAttribute("data-send"), b.getAttribute("data-lbl")); });
+    });
+    grid.querySelectorAll("[data-inv]").forEach(function (b) {
+      b.addEventListener("click", function () { openInvitacion(b.getAttribute("data-inv")); });
     });
     refreshDots(list);
   }
@@ -609,6 +613,114 @@
     }
     if (pass) sha256(pass).then(persist); else persist(null);
   }
+  /* ---------- Dar acceso a un restaurante ----------
+     Este es el camino real para incorporar un cliente:
+       1. Se asegura de que el restaurante exista en la base de WOY.
+       2. Genera un enlace de un solo uso.
+       3. Tú se lo mandas; ELLOS crean su correo y su contraseña.
+     Así nunca manejas la clave de tu cliente. */
+  var invSlug = null;
+  function openInvitacion(slug) {
+    invSlug = slug;
+    var c = findClient(allClients(), slug);
+    if (!c) return;
+    $("inv2Title").textContent = "Dar acceso · " + c.name;
+    $("inv2Email").value = c.email || "";
+    $("inv2Result").hidden = true;
+    $("inv2Link").value = "";
+    $("inv2Off").hidden = true;
+    $("inv2Body").hidden = true;
+    $("inv2Auth").hidden = true;
+    $("invModal2").classList.add("is-open");
+
+    // Si la nube no responde, lo decimos claro en vez de fallar en silencio.
+    if (!window.WOYCloud || !WOYCloud.activo()) return sinNube("La nube no está configurada.");
+    WOYCloud.comprobar().then(function (ok) {
+      if (!ok) return sinNube("No se pudo conectar con la base de WOY.");
+      mostrarPaso();
+    });
+  }
+  /* Si ya tienes sesión en la nube, directo al enlace; si no, a conectarte. */
+  function mostrarPaso() {
+    var conectado = WOYCloud.haySesion();
+    $("inv2Auth").hidden = conectado;
+    $("inv2Body").hidden = !conectado;
+    if (!conectado) {
+      $("inv2Me").value = WOYCloud.correo() || "lara.woy@icloud.com";
+      $("inv2AuthMsg").hidden = true;
+      $("inv2Me").focus();
+    }
+  }
+  function conectarDueno(crear) {
+    var email = ($("inv2Me").value || "").trim();
+    var pass = $("inv2Pass").value || "";
+    if (!email || !pass) { avisoAuth("Escribe tu correo y tu contraseña."); return; }
+    var accion = crear ? WOYCloud.crearCuenta(email, pass) : WOYCloud.entrar(email, pass);
+    accion.then(function (r) {
+      if (r && r.confirmar) {
+        avisoAuth("Te mandamos un correo de confirmación. Ábrelo y vuelve aquí.");
+        return;
+      }
+      $("inv2Pass").value = "";
+      toast("Conectado a la nube", "ti-cloud-check");
+      mostrarPaso();
+    }).catch(function (e) { avisoAuth(e.message); });
+  }
+  function avisoAuth(msg) {
+    $("inv2AuthMsg").textContent = msg;
+    $("inv2AuthMsg").hidden = false;
+  }
+  function sinNube(motivo) {
+    $("inv2Body").hidden = true;
+    $("inv2Off").hidden = false;
+    $("inv2Off").innerHTML =
+      "<b>" + esc(motivo) + "</b><br><br>" +
+      "Para que tus clientes puedan entrar desde sus propios dispositivos hace " +
+      "falta que la base esté activa. Revisa el proyecto en supabase.com y aplica " +
+      "<code>backend/02-acceso.sql</code>. Mientras tanto, cada restaurante sigue " +
+      "administrando su menú desde el navegador donde lo abras tú.";
+  }
+  function generarInvitacion() {
+    var c = findClient(allClients(), invSlug);
+    if (!c) return;
+    var email = ($("inv2Email").value || "").trim();
+    var btn = $("inv2Gen");
+    btn.disabled = true; btn.textContent = "Generando…";
+
+    // 1) ¿ya existe el restaurante en la nube? Si no, lo damos de alta.
+    WOYCloud.clientePorSlug(c.slug)
+      .then(function (cli) {
+        if (cli) return cli;
+        return WOYCloud.crearCliente(c.slug, c.name, c.plan || "basico");
+      })
+      // 2) subir su menú actual para que arranque con lo que ya tiene
+      .then(function (cli) {
+        if (!cli) throw new Error("No se pudo dar de alta el restaurante.");
+        var d = window.WOY.load(c.slug);
+        var limpio = {};
+        for (var k in d) { if (k !== "security") limpio[k] = d[k]; }
+        return WOYCloud.guardarMenu(cli.id, limpio)
+          .catch(function () {})
+          .then(function () { return cli; });
+      })
+      // 3) generar el código de invitación
+      .then(function (cli) { return WOYCloud.crearInvitacion(cli.id, email || null); })
+      .then(function (codigo) {
+        var base = location.href.replace(/[^/]*$/, "");
+        var enlace = base + "admin.html?c=" + encodeURIComponent(c.slug) + "&inv=" + encodeURIComponent(codigo);
+        $("inv2Link").value = enlace;
+        $("inv2Result").hidden = false;
+        btn.disabled = false; btn.innerHTML = '<i class="ti ti-refresh"></i>Generar otro enlace';
+        toast("Enlace de acceso listo", "ti-key");
+      })
+      .catch(function (e) {
+        btn.disabled = false; btn.innerHTML = '<i class="ti ti-link"></i>Generar enlace de acceso';
+        if (/dueño de la plataforma|due.o de la plataforma/i.test(e.message)) {
+          sinNube("Tienes que iniciar sesión en la nube con tu correo de WOY.");
+        } else { toast(e.message, "ti-alert-circle"); }
+      });
+  }
+
   function deleteClient(slug) {
     var list = window.WOY.loadClients();
     var c = findClient(list.map(normalize), slug);
@@ -1212,6 +1324,22 @@
     $("bizCancel").addEventListener("click", closeBiz);
     $("bizSave").addEventListener("click", saveBizProfile);
     $("bizModal").addEventListener("click", function (e) { if (e.target === $("bizModal")) closeBiz(); });
+
+    // Modal de invitación (dar acceso a un restaurante)
+    function cerrarInv() { $("invModal2").classList.remove("is-open"); }
+    $("inv2Close").addEventListener("click", cerrarInv);
+    $("invModal2").addEventListener("click", function (e) { if (e.target === $("invModal2")) cerrarInv(); });
+    $("inv2In").addEventListener("click", function () { conectarDueno(false); });
+    $("inv2New").addEventListener("click", function () { conectarDueno(true); });
+    $("inv2Pass").addEventListener("keydown", function (e) { if (e.key === "Enter") conectarDueno(false); });
+    $("inv2Gen").addEventListener("click", generarInvitacion);
+    $("inv2Copy").addEventListener("click", function () { copy($("inv2Link").value, "Enlace de acceso"); });
+    $("inv2Wa").addEventListener("click", function () {
+      var c = findClient(allClients(), invSlug);
+      var texto = "Hola" + (c ? " " + c.name : "") + " 👋 Aquí está tu acceso al panel de tu menú digital. " +
+        "Ábrelo y crea tu propia contraseña:\n\n" + $("inv2Link").value;
+      window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank", "noopener");
+    });
 
     $("ownLogout").addEventListener("click", function () {
       try { sessionStorage.removeItem("woy_owner_ok"); } catch (e) {}

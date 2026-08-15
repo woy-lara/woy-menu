@@ -1415,3 +1415,41 @@ html.font-serif .hello h1 {
   #listHd { animation-delay: 0.26s; }
   .list { animation-delay: 0.3s; }
 }
+
+/* ---------- Opinión del comensal (llega al restaurante) ---------- */
+.info-opina {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px 16px; margin-top: 8px; color: var(--ink);
+  transition: transform .15s ease, border-color .15s ease;
+}
+.info-opina:active { transform: scale(.99); }
+.info-opina .io-emoji { font-size: 24px; line-height: 1; }
+.info-opina .ti { color: var(--ink-3); font-size: 18px; }
+
+.op-lead { color: var(--ink-2); font-size: 13.5px; line-height: 1.5; padding: 0 2px 4px; }
+.op-stars { display: flex; gap: 6px; justify-content: center; padding: 14px 0 6px; }
+.op-star {
+  font-size: 34px; line-height: 1; color: var(--line-2);
+  transition: transform .12s ease, color .12s ease;
+}
+.op-star.on { color: var(--accent-2); }
+.op-star:active { transform: scale(1.18); }
+.op-text {
+  width: 100%; margin-top: 10px; padding: 13px 14px; resize: vertical;
+  border: 1px solid var(--line); border-radius: 14px;
+  font-family: inherit; font-size: 14.5px; line-height: 1.45; color: var(--ink);
+  background: var(--surface);
+}
+.op-text:focus { outline: none; border-color: var(--accent); }
+.op-acts { display: flex; gap: 10px; margin-top: 14px; padding-bottom: 24px; }
+.op-acts .btn-ghost, .op-acts .btn-main {
+  flex: 1; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 600;
+}
+.op-acts .btn-ghost { background: var(--surface-2); color: var(--ink-2); }
+.op-acts .btn-main { background: var(--accent); color: #fff; }
+.op-acts .btn-main:disabled { opacity: .6; }
+.op-gracias { text-align: center; padding: 46px 20px 60px; }
+.op-gracias span { font-size: 46px; display: block; }
+.op-gracias b { display: block; margin-top: 12px; font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
+.op-gracias p { margin-top: 5px; color: var(--ink-2); font-size: 14px; }

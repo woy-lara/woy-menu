@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" />
   <link rel="stylesheet" href="assets/tokens.css?v=14" />
   <link rel="stylesheet" href="assets/admin.css?v=14" />
-  <link rel="stylesheet" href="assets/owner.css?v=28" />
+  <link rel="stylesheet" href="assets/owner.css?v=29" />
 </head>
 <body class="owner">
   <!-- Candado del dueño -->
@@ -376,9 +376,68 @@
     </div>
   </div>
 
+  <!-- Invitación: el enlace con el que un restaurante crea su propio acceso -->
+  <div class="modal-scrim" id="invModal2">
+    <div class="modal">
+      <div class="modal-hd">
+        <h3 id="inv2Title">Dar acceso al restaurante</h3>
+        <button class="iconbtn" id="inv2Close" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+      </div>
+
+      <!-- Paso 0: conectar TU cuenta de WOY con la nube (solo la primera vez) -->
+      <div id="inv2Auth" hidden>
+        <p class="hint" style="margin-bottom:12px">
+          Para dar accesos, primero conecta tu cuenta de WOY con la base.
+          Usa tu correo de dueño; la contraseña la eliges tú y solo tú la conoces.
+        </p>
+        <div class="field"><label>Tu correo de WOY</label><input type="email" id="inv2Me" placeholder="lara.woy@icloud.com" /></div>
+        <div class="field"><label>Contraseña</label><input type="password" id="inv2Pass" placeholder="Mínimo 8 caracteres" autocomplete="current-password" /></div>
+        <div class="inv2-acts">
+          <button class="pill-btn" id="inv2In" type="button"><i class="ti ti-login"></i>Entrar</button>
+          <button class="pill-btn ghost" id="inv2New" type="button"><i class="ti ti-user-plus"></i>Es mi primera vez</button>
+        </div>
+        <p class="hint" id="inv2AuthMsg" style="margin-top:10px" hidden></p>
+      </div>
+
+      <div id="inv2Body">
+        <p class="hint" style="margin-bottom:12px">
+          Envíale este enlace al restaurante. Al abrirlo, <b>ellos crean su propio
+          correo y contraseña</b> — tú nunca ves su clave. Después entran desde
+          cualquier teléfono o computadora.
+        </p>
+        <div class="field">
+          <label>Correo del restaurante (opcional, para tu registro)</label>
+          <input type="email" id="inv2Email" placeholder="dueno@restaurante.com" />
+        </div>
+        <button class="pill-btn" id="inv2Gen" type="button" style="width:100%;justify-content:center">
+          <i class="ti ti-link"></i>Generar enlace de acceso
+        </button>
+
+        <div id="inv2Result" hidden style="margin-top:16px">
+          <div class="field">
+            <label>Enlace de acceso (un solo uso · vence en 30 días)</label>
+            <input type="text" id="inv2Link" readonly />
+          </div>
+          <div class="inv2-acts">
+            <button class="pill-btn ghost" id="inv2Copy" type="button"><i class="ti ti-copy"></i>Copiar</button>
+            <button class="pill-btn ghost" id="inv2Wa" type="button"><i class="ti ti-brand-whatsapp"></i>WhatsApp</button>
+          </div>
+          <p class="hint" style="margin-top:10px">
+            Guárdalo bien: por seguridad no se puede volver a ver. Si se pierde,
+            genera otro.
+          </p>
+        </div>
+      </div>
+
+      <p class="inv2-off" id="inv2Off" hidden></p>
+    </div>
+  </div>
+
   <div class="atoast" id="atoast"></div>
 
+  <script src="assets/supabase-config.js?v=1"></script>
+  <script src="assets/woy-cloud.js?v=1"></script>
   <script src="assets/data.js?v=16"></script>
-  <script src="assets/owner.js?v=30"></script>
+  <script src="assets/owner.js?v=31"></script>
 </body>
 </html>

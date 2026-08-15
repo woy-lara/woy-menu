@@ -842,3 +842,38 @@ body.owner .al-hd .ti { color: var(--accent); }
 .dtask .tk-who { color: #17141d; font-weight: 700; font-size: 12px; }
 .tk-av.sm { width: 26px; height: 26px; font-size: 13px; border-width: 1.5px; }
 .tk-badge.sm { font-size: 10.5px; padding: 2px 9px; }
+
+/* ---------- Modal "Dar acceso" (invitación de restaurante) ---------- */
+.inv2-acts {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.inv2-acts .pill-btn {
+  flex: 1;
+  justify-content: center;
+}
+#inv2Link {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  background: var(--surface-2);
+}
+.inv2-off {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #7c2d12;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.inv2-off code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  background: rgba(124, 45, 18, 0.09);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+@media (max-width: 560px) {
+  .inv2-acts { flex-direction: column; }
+}

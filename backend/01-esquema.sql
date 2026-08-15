@@ -66,7 +66,7 @@ alter table comments     enable row level security;
 
 -- Helper: ¿el usuario logueado administra este cliente?
 create or replace function administra(c uuid)
-returns boolean language sql security definer stable as $fn$
+returns boolean language sql security definer stable set search_path = public, pg_temp as $fn$
   select exists (
     select 1 from client_users
     where user_id = auth.uid() and client_id = c
@@ -75,7 +75,7 @@ $fn$;
 
 -- Helper: ¿es el dueño de la plataforma (WOY)?
 create or replace function es_owner()
-returns boolean language sql security definer stable as $fn$
+returns boolean language sql security definer stable set search_path = public, pg_temp as $fn$
   select exists (
     select 1 from client_users
     where user_id = auth.uid() and role = 'owner'
@@ -122,7 +122,7 @@ create policy "solo el admin lee comentarios"
 -- ============================================================
 create or replace function reporte_semanal(c uuid)
 returns table (dia date, visitas bigint)
-language sql stable security definer as $fn$
+language sql stable security definer set search_path = public, pg_temp as $fn$
   select d::date as dia,
          count(v.id) as visitas
   from generate_series(

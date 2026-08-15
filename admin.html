@@ -9,18 +9,21 @@
   <title>WOY — Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="assets/tokens.css?v=11" />
-  <link rel="stylesheet" href="assets/admin.css?v=18" />
+  <link rel="stylesheet" href="assets/admin.css?v=20" />
 </head>
 <body class="admin">
   <div class="lock" id="lockScreen" hidden>
     <div class="lock-card">
-      <span class="lock-logo">🔐</span>
+      <span class="lock-logo" id="lockLogo">🔐</span>
       <h2 id="lockTitle">Panel administrativo</h2>
       <p id="lockHint">Ingresa la contraseña para continuar.</p>
+      <input type="email" id="lockEmail" placeholder="Correo" autocomplete="email" hidden />
       <input type="text" id="lockUser" placeholder="Usuario" autocomplete="username" />
       <input type="password" id="lockPass" placeholder="Contraseña" autocomplete="current-password" />
       <button class="pill-btn" id="lockBtn" type="button">Entrar</button>
       <p class="lock-err" id="lockErr" hidden>Usuario o contraseña incorrectos</p>
+      <button class="lock-link" id="lockForgot" type="button" hidden>¿Olvidaste tu contraseña?</button>
+      <p class="lock-note" id="lockNote" hidden></p>
     </div>
   </div>
   <div class="shell">
@@ -35,9 +38,11 @@
         <button data-sec="marca"><i class="ti ti-palette"></i><span class="lbl">Marca</span></button>
         <button data-sec="marketing"><i class="ti ti-speakerphone"></i><span class="lbl">Marketing</span></button>
         <button data-sec="mesas"><i class="ti ti-qrcode"></i><span class="lbl">Mesas</span></button>
+        <button data-sec="reportes" id="navReportes" hidden><i class="ti ti-chart-bar"></i><span class="lbl">Reportes</span></button>
         <button data-sec="config"><i class="ti ti-settings"></i><span class="lbl">Ajustes</span></button>
       </nav>
       <div class="side-foot">
+        <div class="cloud-state" id="cloudState" hidden></div>
         <a href="index.html" target="_blank" rel="noopener"><i class="ti ti-external-link"></i><span>Ver menú</span></a>
         <div class="side-credit">Desarrollado por <b>WOY Projects</b></div>
       </div>
@@ -183,6 +188,27 @@
       </section>
 
       <!-- Configuración -->
+      <!-- Reportes: solo aparece cuando el restaurante está en la nube -->
+      <section class="section" id="sec-reportes">
+        <div class="page-hd">
+          <div><h1>Reportes</h1><p>Cuánta gente abrió tu menú y qué opinaron.</p></div>
+          <button class="pill-btn ghost" id="repRefresh" type="button"><i class="ti ti-refresh"></i>Actualizar</button>
+        </div>
+
+        <div class="card">
+          <h3>Accesos al menú · últimos 7 días</h3>
+          <p class="hint">Cada vez que alguien escanea un QR y abre tu menú, se cuenta aquí. Es anónimo: no sabemos quién es.</p>
+          <div class="rep-kpis" id="repKpis"></div>
+          <div class="rep-chart" id="repChart"></div>
+        </div>
+
+        <div class="card">
+          <h3>Lo que opinan tus clientes</h3>
+          <p class="hint">Comentarios que dejan desde el menú. Solo tú los ves.</p>
+          <div class="rep-comments" id="repComments"></div>
+        </div>
+      </section>
+
       <section class="section" id="sec-config">
         <div class="page-hd"><div><h1>Configuración</h1><p>Cuenta, preferencias del menú y respaldo de tus datos.</p></div></div>
 
@@ -300,7 +326,9 @@
   <div class="atoast" id="atoast" role="status" aria-live="polite"></div>
 
   <script src="assets/qrcode.min.js?v=1"></script>
+  <script src="assets/supabase-config.js?v=1"></script>
+  <script src="assets/woy-cloud.js?v=1"></script>
   <script src="assets/data.js?v=16"></script>
-  <script src="assets/admin.js?v=20"></script>
+  <script src="assets/admin.js?v=22"></script>
 </body>
 </html>

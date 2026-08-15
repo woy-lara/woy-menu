@@ -3,6 +3,7 @@
   "use strict";
 
   var data = window.WOY.load();
+  var nubeCli = null;   // ficha del restaurante en la nube, si existe allá
   var CART_KEY = "woy_cart_v2";
   var LANG_KEY = "woy_lang";
 
@@ -38,7 +39,13 @@
       infoTitle: "Información", reservations: "Reservas",
       services: "Servicios especiales", follow: "Síguenos",
       developedBy: "Desarrollado por", promoCta: "Ver menú",
-      reviewTitle: "¿Te gustó tu visita?", reviewCta: "Déjanos tu reseña en Google"
+      reviewTitle: "¿Te gustó tu visita?", reviewCta: "Déjanos tu reseña en Google",
+      opinaTitle: "¿Cómo estuvo todo?", opinaCta: "Cuéntanos en 10 segundos",
+      opinaLead: "Tu opinión llega directo al restaurante. Es anónima y opcional.",
+      opinaPh: "¿Qué te gustó? ¿Qué podemos mejorar? (opcional)",
+      opinaSend: "Enviar", opinaBack: "Volver",
+      opinaVacio: "Toca una estrella o escribe algo",
+      opinaGracias: "¡Gracias!", opinaGraciasSub: "El restaurante ya lo tiene."
     },
     en: {
       greeting: "What are you craving?",
@@ -61,7 +68,13 @@
       infoTitle: "Info", reservations: "Reservations",
       services: "Special services", follow: "Follow us",
       developedBy: "Developed by", promoCta: "See menu",
-      reviewTitle: "Enjoyed your visit?", reviewCta: "Leave us a Google review"
+      reviewTitle: "Enjoyed your visit?", reviewCta: "Leave us a Google review",
+      opinaTitle: "How was everything?", opinaCta: "Tell us in 10 seconds",
+      opinaLead: "Your feedback goes straight to the restaurant. Anonymous and optional.",
+      opinaPh: "What did you like? What could we do better? (optional)",
+      opinaSend: "Send", opinaBack: "Back",
+      opinaVacio: "Tap a star or write something",
+      opinaGracias: "Thank you!", opinaGraciasSub: "The restaurant has it now."
     }
   };
   function t(k) { return (T[lang] && T[lang][k]) || T.es[k] || k; }
@@ -628,12 +641,66 @@
         '</small></span><i class="ti ti-external-link"></i></a>'
       : "";
 
+    // Comentario privado para el restaurante. Solo aparece si el restaurante
+    // está en la nube (si no, no habría dónde guardarlo). Va ANTES del botón
+    // de Google: primero nos cuentan a nosotros, y si les gustó, que lo digan
+    // públicamente. Nada obligatorio.
+    var opinar = nubeCli
+      ? '<button class="info-opina" id="opinaBtn" type="button">' +
+        '<span class="io-emoji">💬</span><span class="ir-tx"><b>' + t("opinaTitle") + "</b><small>" +
+        t("opinaCta") + "</small></span><i class=\"ti ti-chevron-right\"></i></button>"
+      : "";
+
     $("infoScroll").innerHTML =
       '<div class="cart-hd"><h2>' + t("infoTitle") + "</h2></div>" +
       '<div class="info-brand"><span>' + esc(data.brand.logoEmoji || "🍽️") + "</span>" +
       "<div><b>" + esc(data.brand.name || "") + "</b><small>" + esc(data.brand.tagline || "") + "</small></div></div>" +
-      rows + review +
+      rows + opinar + review +
       '<div class="foot" style="padding:18px 0 26px">' + t("developedBy") + " <b>WOY Projects</b></div>";
+
+    var ob = $("opinaBtn");
+    if (ob) ob.addEventListener("click", abrirOpinion);
+  }
+
+  /* ---------- Dejar un comentario ---------- */
+  var opinionNota = 0;
+  function abrirOpinion() {
+    opinionNota = 0;
+    $("infoScroll").innerHTML =
+      '<div class="cart-hd"><h2>' + t("opinaTitle") + "</h2></div>" +
+      '<p class="op-lead">' + t("opinaLead") + "</p>" +
+      '<div class="op-stars" id="opStars">' +
+      [1, 2, 3, 4, 5].map(function (n) {
+        return '<button type="button" class="op-star" data-n="' + n + '" aria-label="' + n + '">★</button>';
+      }).join("") + "</div>" +
+      '<textarea class="op-text" id="opText" rows="4" placeholder="' + esc(t("opinaPh")) + '"></textarea>' +
+      '<div class="op-acts">' +
+      '<button class="btn-ghost" id="opBack" type="button">' + t("opinaBack") + "</button>" +
+      '<button class="btn-main" id="opSend" type="button">' + t("opinaSend") + "</button></div>";
+
+    $("opStars").addEventListener("click", function (e) {
+      var b = e.target.closest(".op-star");
+      if (!b) return;
+      opinionNota = parseInt(b.getAttribute("data-n"), 10);
+      Array.prototype.forEach.call($("opStars").children, function (s, i) {
+        s.classList.toggle("on", i < opinionNota);
+      });
+    });
+    $("opBack").addEventListener("click", renderInfo);
+    $("opSend").addEventListener("click", function () {
+      var texto = ($("opText").value || "").trim();
+      if (!opinionNota && !texto) { toast(t("opinaVacio"), "ti-alert-circle"); return; }
+      $("opSend").disabled = true;
+      WOYCloud.dejarComentario(window.WOY.tenantId(), opinionNota || null, texto,
+        state.mesa ? state.mesa.id : null)
+        .then(function () {
+          $("infoScroll").innerHTML =
+            '<div class="op-gracias"><span>🙏</span><b>' + t("opinaGracias") + "</b><p>" +
+            t("opinaGraciasSub") + "</p></div>";
+          setTimeout(function () { if ($("opText") === null) renderInfo(); }, 2600);
+        })
+        .catch(function (e) { $("opSend").disabled = false; toast(e.message, "ti-alert-circle"); });
+    });
   }
   function openInfo() { renderInfo(); openSheet("infoSheet"); }
 
@@ -655,6 +722,27 @@
   }
 
   /* ---------- Init ---------- */
+  /* Trae el menú publicado desde la nube (si el restaurante ya está allá) y
+     avisa de la visita para el reporte del restaurante. Si algo falla, el
+     comensal ve el menú local: nunca se queda con la pantalla en blanco. */
+  function sincronizarConNube() {
+    var slug = window.WOY.tenantId();
+    if (!slug || !window.WOYCloud || !WOYCloud.activo()) return Promise.resolve(false);
+    return WOYCloud.clientePorSlug(slug).then(function (cli) {
+      if (!cli) return false;
+      // Contar la visita (anónima, sin identificar a nadie). No bloquea.
+      WOYCloud.registrarVisita(slug, state.mesa ? state.mesa.id : null).catch(function () {});
+      nubeCli = cli;
+      return WOYCloud.leerMenu(cli.id).then(function (fila) {
+        if (!fila || !fila.data || !Array.isArray(fila.data.dishes)) return false;
+        var limpio = window.WOY.sanitizeMenu(fila.data, null);
+        if (!limpio) return false;
+        data = limpio;
+        return true;
+      });
+    }).catch(function () { return false; });
+  }
+
   function init() {
     applyBrand();
     state.mesa = readMesa();
@@ -668,6 +756,17 @@
     renderFeatured();
     renderList();
     updateBadges();
+
+    // Si el restaurante ya vive en la nube, repintamos con lo publicado.
+    sincronizarConNube().then(function (hayNube) {
+      if (!hayNube) return;
+      applyBrand();
+      applyStatic();
+      renderPromo();
+      renderCats();
+      renderFeatured();
+      renderList();
+    });
 
     $("q").addEventListener("input", function (e) {
       state.q = e.target.value;

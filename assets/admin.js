@@ -5,6 +5,7 @@
   var data = window.WOY.load();
   var editing = null; // id del plato en edición, o null para uno nuevo
   var draft = null; // borrador de tamaños/mods/imagen mientras se edita
+  var nube = null;  // ficha del restaurante en la nube, o null en modo local
 
   /* ---------- Utilidades ---------- */
   function $(id) { return document.getElementById(id); }
@@ -15,7 +16,35 @@
   function save() {
     var ok = window.WOY.save(data);
     if (!ok) toast("No se pudo guardar: el navegador está lleno. Borra fotos pesadas o exporta un respaldo.", "ti-alert-circle");
+    subirANube();
     return ok;
+  }
+
+  /* Sube el menú a la nube. Se agrupa (800 ms) para no mandar una petición
+     por cada tecla mientras se edita. Solo aplica en modo nube. */
+  var subirT = null, subiendo = false;
+  function subirANube() {
+    if (!nube || !window.WOYCloud) return;
+    clearTimeout(subirT);
+    subirT = setTimeout(function () {
+      if (subiendo) { subirANube(); return; }     // hay una en vuelo: reintenta
+      subiendo = true;
+      marcarNube("subiendo");
+      WOYCloud.guardarMenu(nube.id, sinCredenciales(data))
+        .then(function () { marcarNube("ok"); })
+        .catch(function () { marcarNube("error"); })
+        .then(function () { subiendo = false; });
+    }, 800);
+  }
+
+  /* Indicador discreto de sincronización en la barra lateral. */
+  function marcarNube(estado) {
+    var e = $("cloudState");
+    if (!e) return;
+    e.hidden = false;
+    if (estado === "subiendo") { e.className = "cloud-state is-sync"; e.innerHTML = '<i class="ti ti-cloud-upload"></i>Guardando…'; }
+    else if (estado === "ok") { e.className = "cloud-state is-ok"; e.innerHTML = '<i class="ti ti-cloud-check"></i>Guardado en la nube'; }
+    else { e.className = "cloud-state is-err"; e.innerHTML = '<i class="ti ti-cloud-off"></i>Sin conexión — guardado aquí'; }
   }
 
   var toastT;
@@ -764,6 +793,93 @@
     w.document.close();
   }
 
+  /* ---------- Reportes (accesos y comentarios) ----------
+     Solo existe en modo nube: los comensales entran desde sus propios
+     teléfonos, así que hace falta un sitio central donde sumar las visitas. */
+  function initReportes() {
+    if (!nube) return;                       // en modo local no hay de dónde
+    $("navReportes").hidden = false;
+    $("repRefresh").addEventListener("click", cargarReportes);
+    cargarReportes();
+  }
+
+  function cargarReportes() {
+    if (!nube) return;
+    $("repChart").innerHTML = '<p class="hint">Cargando…</p>';
+    WOYCloud.reporteSemanal(nube.slug).then(function (filas) {
+      pintarAccesos(filas || []);
+    }).catch(function (e) {
+      $("repChart").innerHTML = '<p class="hint">No se pudo cargar: ' + esc(e.message) + "</p>";
+    });
+    WOYCloud.leerComentarios(nube.id, 50).then(function (lista) {
+      pintarComentarios(lista || []);
+    }).catch(function () {
+      $("repComments").innerHTML = '<p class="hint">No se pudieron cargar los comentarios.</p>';
+    });
+  }
+
+  var DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  function pintarAccesos(filas) {
+    var total = filas.reduce(function (a, f) { return a + (+f.visitas || 0); }, 0);
+    var max = Math.max.apply(null, filas.map(function (f) { return +f.visitas || 0; }).concat([1]));
+    var prom = filas.length ? Math.round(total / filas.length) : 0;
+    var mejor = filas.reduce(function (a, f) { return (+f.visitas > (+a.visitas || 0)) ? f : a; }, filas[0] || {});
+
+    $("repKpis").innerHTML =
+      kpi(total, "aperturas esta semana") +
+      kpi(prom, "promedio por día") +
+      kpi(mejor && mejor.dia ? nombreDia(mejor.dia) : "—", "tu día más fuerte");
+
+    $("repChart").innerHTML = filas.map(function (f) {
+      var v = +f.visitas || 0;
+      var alto = Math.max(4, Math.round((v / max) * 100));
+      return '<div class="rc-col" title="' + esc(f.dia) + ": " + v + '">' +
+        '<span class="rc-val">' + v + "</span>" +
+        '<div class="rc-bar" style="height:' + alto + '%"></div>' +
+        '<span class="rc-day">' + esc(nombreDia(f.dia)) + "</span></div>";
+    }).join("") || '<p class="hint">Todavía no hay datos.</p>';
+  }
+  function kpi(valor, etiqueta) {
+    return '<div class="rep-kpi"><b>' + esc(String(valor)) + "</b><small>" + esc(etiqueta) + "</small></div>";
+  }
+  function nombreDia(iso) {
+    var p = String(iso || "").split("-");
+    if (p.length < 3) return iso || "";
+    var d = new Date(+p[0], (+p[1] || 1) - 1, +p[2] || 1);
+    return DIAS[d.getDay()] + " " + d.getDate();
+  }
+
+  function pintarComentarios(lista) {
+    if (!lista.length) {
+      $("repComments").innerHTML =
+        '<div class="rep-vacio"><span>💬</span><b>Todavía no hay comentarios</b>' +
+        "<p>Aparecerán aquí en cuanto alguien opine desde tu menú.</p></div>";
+      return;
+    }
+    $("repComments").innerHTML = lista.map(function (c) {
+      var estrellas = c.rating
+        ? '<span class="rc-stars">' + "★".repeat(c.rating) + '<span class="off">' + "★".repeat(5 - c.rating) + "</span></span>"
+        : "";
+      return '<div class="rep-com">' +
+        '<div class="rc-top">' + estrellas +
+        '<span class="rc-when">' + esc(cuando(c.created_at)) +
+        (c.table_no ? " · Mesa " + esc(c.table_no) : "") + "</span></div>" +
+        (c.body ? "<p>" + esc(c.body) + "</p>" : '<p class="rc-solo">Solo dejó calificación.</p>') +
+        "</div>";
+    }).join("");
+  }
+  function cuando(iso) {
+    var d = new Date(iso), ahora = new Date();
+    var min = Math.round((ahora - d) / 60000);
+    if (min < 1) return "ahora mismo";
+    if (min < 60) return "hace " + min + " min";
+    var h = Math.round(min / 60);
+    if (h < 24) return "hace " + h + " h";
+    var dias = Math.round(h / 24);
+    if (dias < 7) return "hace " + dias + " día" + (dias > 1 ? "s" : "");
+    return d.toLocaleDateString("es-PA", { day: "numeric", month: "short" });
+  }
+
   /* ---------- Configuración ---------- */
   function initConfig() {
     data.settings = data.settings || {};
@@ -771,6 +887,25 @@
     $("cfgUser").value = data.security.user || "";
     $("cfgLang").value = data.settings.defaultLang || "es";
     $("cfgCurrency").value = data.settings.currency || "$";
+
+    // En modo nube la cuenta la maneja el servidor: mostramos el correo y
+    // el cambio de contraseña se hace por correo, no aquí.
+    if (nube && window.WOYCloud) {
+      $("cfgUser").value = WOYCloud.correo();
+      $("cfgUser").disabled = true;
+      $("cfgPass").disabled = true;
+      $("cfgPass").placeholder = "Se cambia por correo (abajo)";
+      var acc = $("cfgSaveAccount");
+      if (acc) {
+        acc.textContent = "Cambiar contraseña por correo";
+        acc.addEventListener("click", function (e) {
+          e.stopImmediatePropagation();
+          WOYCloud.recuperar(WOYCloud.correo(), location.href)
+            .then(function () { toast("Te enviamos un enlace a tu correo", "ti-mail"); })
+            .catch(function (err) { toast(err.message, "ti-alert-circle"); });
+        }, true);
+      }
+    }
 
     $("cfgSaveAccount").addEventListener("click", function () {
       var u = $("cfgUser").value.trim();
@@ -793,6 +928,10 @@
     $("cfgLogout").addEventListener("click", function () {
       var lockKey = "woy_admin_ok__" + (window.WOY.tenantId() || "default");
       try { sessionStorage.removeItem(lockKey); } catch (e) {}
+      if (nube && window.WOYCloud) {
+        WOYCloud.salir().then(function () { location.reload(); });
+        return;
+      }
       location.reload();
     });
 
@@ -859,7 +998,161 @@
       }).join(""));
     });
   }
+  /* ---------- Acceso ----------
+     Hay dos modos y se elige solo:
+
+     • NUBE: el restaurante existe en la base de WOY (lo dio de alta Carlos).
+       Entra con SU correo y SU contraseña, desde cualquier dispositivo, y su
+       menú vive en la nube. Es el modo real.
+     • LOCAL: como siempre, contraseña guardada en este navegador. Se usa
+       para el restaurante demo y si la nube no está disponible, para que
+       nada deje de funcionar. */
   function initLock(done) {
+    var slug = window.WOY.tenantId();
+    var inv = param("inv");
+    // Sin nube configurada, o sin restaurante en la URL → modo local de siempre.
+    if (!window.WOYCloud || !WOYCloud.activo() || (!slug && !inv)) {
+      return lockLocal(done);
+    }
+    WOYCloud.clientePorSlug(slug).then(function (cli) {
+      if (cli) return lockNube(cli, inv, done);
+      lockLocal(done);           // ese slug no está en la nube: sigue local
+    }).catch(function () {
+      lockLocal(done);           // sin red o SQL sin aplicar: sigue local
+    });
+  }
+
+  function param(n) {
+    try { return new URLSearchParams(location.search).get(n) || ""; }
+    catch (e) { return ""; }
+  }
+
+  /* ---------- Acceso en la nube ---------- */
+  function lockNube(cli, invitacion, done) {
+    nube = cli;                          // a partir de aquí, guardamos arriba
+    var L = $("lockScreen");
+    var creando = !!invitacion;
+
+    function entrarYa() {
+      // Ya hay sesión: comprobar que administra ESTE restaurante.
+      return WOYCloud.misRestaurantes().then(function (lista) {
+        var mio = (lista || []).some(function (r) { return r.id === cli.id; });
+        if (!mio) return false;
+        return cargarMenuNube(cli).then(function () { L.hidden = true; done(); return true; });
+      });
+    }
+
+    // Si ya venía con sesión abierta, no molestamos con el formulario.
+    if (WOYCloud.haySesion() && !creando) {
+      entrarYa().then(function (ok) { if (!ok) pintar(); }).catch(pintar);
+      return;
+    }
+    pintar();
+
+    function pintar() {
+      L.hidden = false;
+      $("lockUser").hidden = true;                 // en la nube se usa el correo
+      $("lockEmail").hidden = false;
+      $("lockEmail").value = "";
+      $("lockPass").value = "";
+      $("lockErr").hidden = true;
+      $("lockNote").hidden = true;
+      $("lockLogo").textContent = creando ? "👋" : "🔐";
+      $("lockTitle").textContent = creando ? "Crea tu acceso" : "Panel del restaurante";
+      $("lockHint").innerHTML = creando
+        ? "Te invitaron a administrar <b>" + esc(cli.name) + "</b>. Elige tu correo y tu contraseña — solo tú las conocerás."
+        : "Entra con tu correo y contraseña para administrar <b>" + esc(cli.name) + "</b>.";
+      $("lockPass").placeholder = creando ? "Elige una contraseña (mín. 8)" : "Contraseña";
+      $("lockBtn").textContent = creando ? "Crear mi acceso" : "Entrar";
+      $("lockForgot").hidden = creando;
+      $("lockEmail").focus();
+    }
+
+    function fallo(msg) { $("lockErr").textContent = msg; $("lockErr").hidden = false; }
+    function nota(msg) { $("lockNote").textContent = msg; $("lockNote").hidden = false; }
+    function ocupado(si) {
+      $("lockBtn").disabled = si;
+      $("lockBtn").textContent = si ? "Un momento…" : (creando ? "Crear mi acceso" : "Entrar");
+    }
+
+    function terminar() {
+      return cargarMenuNube(cli).then(function () { L.hidden = true; done(); });
+    }
+
+    function enviar() {
+      $("lockErr").hidden = true;
+      var email = ($("lockEmail").value || "").trim();
+      var pass = $("lockPass").value || "";
+      if (!email || !pass) return;
+      ocupado(true);
+
+      if (creando) {
+        // Crear cuenta y canjear la invitación. Si el correo ya existe,
+        // probamos a entrar con él y canjeamos igual.
+        WOYCloud.crearCuenta(email, pass)
+          .catch(function (e) {
+            if (/ya tiene una cuenta/i.test(e.message)) return WOYCloud.entrar(email, pass);
+            throw e;
+          })
+          .then(function (r) {
+            if (r && r.confirmar) {
+              ocupado(false);
+              nota("Te enviamos un correo de confirmación. Ábrelo y vuelve a este enlace para terminar.");
+              return null;
+            }
+            return WOYCloud.canjearInvitacion(invitacion).then(terminar);
+          })
+          .catch(function (e) { ocupado(false); fallo(e.message); });
+      } else {
+        WOYCloud.entrar(email, pass)
+          .then(function () { return WOYCloud.misRestaurantes(); })
+          .then(function (lista) {
+            var mio = (lista || []).some(function (r) { return r.id === cli.id; });
+            if (!mio) throw new Error("Esta cuenta no administra " + cli.name + ".");
+            return terminar();
+          })
+          .catch(function (e) { ocupado(false); fallo(e.message); });
+      }
+    }
+
+    $("lockBtn").addEventListener("click", enviar);
+    $("lockEmail").addEventListener("keydown", function (e) { if (e.key === "Enter") $("lockPass").focus(); });
+    $("lockPass").addEventListener("keydown", function (e) { if (e.key === "Enter") enviar(); });
+    $("lockForgot").addEventListener("click", function () {
+      var email = ($("lockEmail").value || "").trim();
+      if (!email) { fallo("Escribe tu correo primero."); return; }
+      WOYCloud.recuperar(email, location.href)
+        .then(function () { nota("Si ese correo tiene cuenta, te llegará un enlace para cambiar la contraseña."); })
+        .catch(function (e) { fallo(e.message); });
+    });
+  }
+
+  /* Trae el menú del restaurante desde la nube. Si allá todavía no hay nada
+     (recién dado de alta), sube lo que haya en este navegador. */
+  function cargarMenuNube(cli) {
+    return WOYCloud.leerMenu(cli.id).then(function (fila) {
+      if (fila && fila.data && Array.isArray(fila.data.dishes)) {
+        var limpio = window.WOY.sanitizeMenu(fila.data, data.security);
+        if (limpio) {
+          data = limpio;
+          window.WOY.save(data);            // copia local de respaldo
+          return;
+        }
+      }
+      // Primera vez: sembramos la nube con lo que ya existe aquí.
+      return WOYCloud.guardarMenu(cli.id, sinCredenciales(data)).catch(function () {});
+    }).catch(function () { /* sin red: seguimos con el menú local */ });
+  }
+
+  /* El menú que sube a la nube nunca lleva credenciales. */
+  function sinCredenciales(d) {
+    var out = {};
+    for (var k in d) { if (k !== "security") out[k] = d[k]; }
+    return out;
+  }
+
+  /* ---------- Acceso local (el de siempre) ---------- */
+  function lockLocal(done) {
     var sec = data.security || (data.security = {});
     var lockKey = "woy_admin_ok__" + (window.WOY.tenantId() || "default");
     var ok = false;
@@ -870,6 +1163,8 @@
     // usuario: en ese caso solo se pide la contraseña.
     var needUser = creating || !!sec.user;
     $("lockScreen").hidden = false;
+    $("lockEmail").hidden = true;      // el correo es solo del modo nube
+    $("lockForgot").hidden = true;
     $("lockUser").hidden = !needUser;
     $("lockUser").value = "";
     $("lockPass").value = "";
@@ -928,6 +1223,7 @@
       initCatAdd();
       initTables();
       initCatalogTools();
+      initReportes();
       renderCats();
       renderDishes();
       renderQR();

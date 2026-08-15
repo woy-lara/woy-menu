@@ -1,46 +1,73 @@
 # WOY Projects — Lista de pendientes (priorizada)
 
-_Última revisión: 2026-07-20 · auditoría de código + estado del backend._
+_Última revisión: 2026-08-15 · tras construir el sistema de acceso de clientes._
 
 Leyenda: ✅ hecho · 🔨 en progreso · ⬜ pendiente · 🔒 requiere que tú (Carlos) hagas algo
 
 ---
 
-## P0 · Fundamentos — el backend (desbloquea TODO)
+## 🔒 P0 · Lo único que bloquea todo (tuyo, 5 minutos)
 
-Hoy cada dato vive solo en el navegador donde se creó, y el "login" se puede
-saltar editando el navegador. Estas fases lo arreglan de raíz. Ya arrancamos.
+- 🔒 **Revisar el proyecto de Supabase.** Hoy `vhtuihtqvskxobkqjeat.supabase.co`
+  **no responde** (el nombre no resuelve; cuando lo creamos decía "Unhealthy").
+  Entra a supabase.com: si está pausado, *Restore*; si quedó a medias, créalo de
+  nuevo y pásame la URL + llave publishable.
+- 🔒 **Pegar el SQL.** SQL Editor → `backend/01-esquema.sql` → Run →
+  `backend/02-acceso.sql` → Run.
 
-- ✅ **Fase 1 — Esquema + seguridad (RLS)** en Supabase. 5 tablas, políticas activas, función `reporte_semanal()`.
-- ⬜ **Fase 2 — Login real** (Supabase Auth). Mata el hueco de seguridad: hoy la contraseña se valida en el navegador. 🔒 Tú creas las contraseñas reales.
-- ⬜ **Fase 3 — Menú en la nube**. Se acaba el "solo se ve en este navegador"; el admin edita en un dispositivo y se ve en todos. Migración con respaldo del localStorage.
-- ⬜ **Fase 4 — Reportes de accesos** (lo que pediste). Conteo semanal por mesa, visible en el admin del restaurante y en tu panel. La tabla y la función ya existen; falta la pantalla + registrar la visita al abrir el menú.
-- ⬜ **Fase 5 — Comentarios de comensales**. Botón no invasivo; se guardan y el admin los ve en su dashboard. (El de Google Reviews ya está.)
+Con eso, todo lo de abajo se enciende solo. **El código ya está hecho y probado.**
 
-## P1 · Producto que genera valor / dinero
+---
 
-- ⬜ **Onboarding self-service de restaurantes**. Hoy TÚ creas cada cliente a mano en tu navegador. Con backend, un restaurante puede registrarse solo → menos trabajo tuyo, más escala.
-- ⬜ **Cobros reales / pasarela de pago** (Yappy / tarjeta). Hoy el facturador es manual. Automatizar cobro recurrente del plan Básico/Pro.
-- ⬜ **Notificaciones automáticas**: recordatorio de cobro y envío de recibo por WhatsApp/correo. Hoy el "notificador" solo se ve dentro del panel.
-- ⬜ **Pedido en tiempo real a cocina** (el gran "coming soon" que ya sale en el menú). El carrito hoy solo se le muestra al mesero; no envía nada.
+## ✅ P1 · El backend (construido y verificado)
 
-## P2 · Confianza, marca y legal
+- ✅ **Esquema + seguridad (RLS)** — 5 tablas con políticas por fila.
+- ✅ **Acceso e invitaciones** — `platform_owners`, `client_invites`,
+  `crear_invitacion()`, `canjear_invitacion()`, `es_owner()` por correo.
+- ✅ **Capa de nube sin dependencias** (`assets/woy-cloud.js`) — cliente propio
+  con fetch, sin SDK de CDN. Sesión, refresco de token, tablas y funciones.
+- ✅ **Login real del restaurante** — correo + contraseña propia, desde cualquier
+  dispositivo, con recuperación por correo.
+- ✅ **Alta de clientes con invitación** — botón "Dar acceso" en tu panel, enlace
+  de un solo uso, envío por WhatsApp.
+- ✅ **Menú en la nube** — el restaurante edita y el comensal lo ve al instante.
+- ✅ **Reportes de accesos** — pestaña nueva con aperturas por día de la semana.
+- ✅ **Comentarios** — el comensal opina desde el menú; el restaurante los lee.
 
-- ⬜ **Dominio propio** (ej. `menu.woyprojects.com`). Hoy `woy-lara.github.io` comparte origen con otros repos de esa cuenta — riesgo de datos cruzados en producción.
-- ⬜ **Fotos reales de los platos** (hoy emojis). La mayor palanca de apetito. 🔒 Tú las provees.
-- ⬜ **Landing page del negocio**. Ya está el PDF con la estructura aprobada como base; falta construirla.
-- ⬜ **Términos y política de privacidad**. Obligatorio en cuanto se recolecten comentarios/datos de comensales.
-- ⬜ **Recuperación de contraseña** (para restaurantes). Llega gratis con Supabase Auth (parte de Fase 2).
+Todo probado de punta a punta contra un simulador local (`dev/mock-nube.js`),
+incluido el aislamiento entre restaurantes.
 
-## P3 · Pulido
+---
 
-- ⬜ **Arrastrar/reordenar las tarjetas del home** del panel de dueño (con orden guardado).
-- 🔒 **Cambiar la contraseña del admin de Hacienda** a una fuerte (Configuración → Cuenta y seguridad). Solo tú, es de tu navegador.
+## P2 · Producto que genera dinero
+
+- ⬜ **Onboarding self-service** — que el restaurante se registre solo, sin que tú
+  generes el enlace. (Ya está la mitad: falta la pantalla pública de registro.)
+- ⬜ **Cobros reales / pasarela** (Yappy o tarjeta) — hoy el facturador es manual.
+- ⬜ **Notificaciones automáticas** — recordatorio de cobro y recibo por
+  WhatsApp/correo.
+- ⬜ **Pedido en tiempo real a cocina** — el gran "coming soon" que ya sale en el
+  menú. El carrito hoy solo se le muestra al mesero.
+
+## P3 · Confianza, marca y legal
+
+- ⬜ **Dominio propio** (ej. `menu.woyprojects.com`). Hoy `woy-lara.github.io`
+  comparte origen con otros repos de esa cuenta.
+- 🔒 **Fotos reales de los platos** — la mayor palanca de apetito. Tú las provees.
+- ⬜ **Landing page del negocio** — ya está el PDF con la estructura.
+- ⬜ **Términos y privacidad** — ahora sí obligatorio: ya se recogen comentarios
+  y estadísticas de visitas.
+- ✅ **Recuperación de contraseña** — vino con el login real.
+
+## P4 · Pulido
+
+- ⬜ **Arrastrar/reordenar tarjetas** del home del panel de dueño.
+- ⬜ **Hacienda a la nube** — el restaurante demo no tiene slug, así que se quedó
+  en modo local. Darle uno para migrarlo.
+- 🔒 **Cambiar la contraseña del admin de Hacienda** a una fuerte.
 - ⬜ **Corregir README** (dice `woy_data_v6`, el código va en `v7`).
 
 ---
 
-### Nota de arquitectura (repetir siempre)
-Sin backend, todo vive en el navegador de quien lo crea. Las fases P0 son las que
-convierten esto de "demo/cockpit local" a "SaaS real multi-dispositivo con seguridad
-del lado del servidor". Todo lo demás se apoya en ellas.
+### Cómo dar de alta un cliente
+Está explicado paso a paso en [`COMO-DAR-DE-ALTA-UN-CLIENTE.md`](COMO-DAR-DE-ALTA-UN-CLIENTE.md).

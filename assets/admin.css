@@ -1088,6 +1088,61 @@ body.admin {
   color: #c0392b !important;
   font-weight: 500;
 }
+/* Estado de sincronización con la nube (barra lateral) */
+.cloud-state {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: var(--r-md);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.06);
+}
+.cloud-state .ti { font-size: 15px; }
+.cloud-state.is-ok { color: #7ee0a8; }
+.cloud-state.is-sync { color: rgba(255, 255, 255, 0.72); }
+.cloud-state.is-err { color: #ffc48a; }
+@media (max-width: 860px) {
+  /* En móvil la tira superior es delgada: solo el ícono, sin texto. */
+  .cloud-state { padding: 7px 9px; }
+  .cloud-state span, .cloud-state { font-size: 0; gap: 0; }
+  .cloud-state .ti { font-size: 17px; }
+}
+
+/* Enlace discreto bajo el botón (recuperar contraseña) */
+.lock-link {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lock-link:hover {
+  color: var(--ink);
+}
+/* Nota informativa (revisa tu correo, etc.) */
+.lock-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+/* Marca del restaurante en la invitación */
+.lock-biz {
+  margin-top: 10px;
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+}
 
 /* ---------- Selector de tipografía ---------- */
 .font-pick {
@@ -1242,3 +1297,41 @@ body.admin {
 /* Botón SVG en tarjetas de mesa */
 .qacts .svgbtn { font-size: 10.5px; font-weight: 800; letter-spacing: .03em; color: var(--ink-2); }
 .qacts .svgbtn:hover { background: var(--surface-2); color: var(--ink); }
+
+/* ---------- Reportes: accesos y comentarios ---------- */
+.rep-kpis { display: flex; gap: 12px; margin: 14px 0 4px; flex-wrap: wrap; }
+.rep-kpi {
+  flex: 1 1 130px; padding: 14px 16px; border-radius: var(--r-md);
+  background: var(--surface-2); border: 1px solid var(--line);
+}
+.rep-kpi b { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+.rep-kpi small { display: block; margin-top: 2px; color: var(--ink-2); font-size: 12px; }
+
+.rep-chart {
+  display: flex; align-items: flex-end; gap: 8px;
+  height: 190px; margin-top: 18px; padding: 8px 4px 0;
+}
+.rc-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; gap: 6px; }
+.rc-val { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.rc-bar {
+  width: 100%; max-width: 46px; border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 62%, #fff));
+  margin-top: auto; transition: height .5s cubic-bezier(.2,.7,.2,1);
+}
+.rc-day { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }
+
+.rep-comments { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.rep-com {
+  padding: 14px 16px; border-radius: var(--r-md);
+  background: var(--surface-2); border: 1px solid var(--line);
+}
+.rep-com p { margin-top: 6px; font-size: 14px; line-height: 1.5; }
+.rep-com .rc-solo { color: var(--ink-3); font-style: italic; }
+.rc-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.rc-stars { color: var(--accent-2); font-size: 15px; letter-spacing: 1px; }
+.rc-stars .off { color: var(--line-2); }
+.rc-when { font-size: 12px; color: var(--ink-3); }
+.rep-vacio { text-align: center; padding: 34px 20px; color: var(--ink-2); }
+.rep-vacio span { font-size: 38px; display: block; }
+.rep-vacio b { display: block; margin-top: 10px; font-size: 15px; color: var(--ink); }
+.rep-vacio p { margin-top: 4px; font-size: 13px; }
