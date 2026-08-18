@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#6D28D9" />
+  <title>WOY — Menús digitales con QR para restaurantes</title>
+  <meta name="description" content="WOY convierte la carta de tu restaurante en un menú digital con código QR: sin apps, sin imprimir, editable al instante y con reportes de tus clientes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+  <style>
+    :root {
+      --violeta: #6D28D9;
+      --violeta-2: #8b5cf6;
+      --violeta-press: #5b21b6;
+      --violeta-soft: #efe9fd;
+      --ink: #17141D;
+      --ink-2: #6F6A7A;
+      --ink-3: #A29DAF;
+      --line: #E8E5EF;
+      --suave: #F7F5FA;
+      --blanco: #FFFFFF;
+      --r: 20px;
+      --r-lg: 30px;
+      --shadow: 0 24px 60px -28px rgba(45, 20, 90, 0.35);
+      --shadow-sm: 0 8px 24px -12px rgba(45, 20, 90, 0.25);
+      --max: 1120px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: "Archivo", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background: var(--blanco);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .serif { font-family: "Instrument Serif", Georgia, serif; font-style: italic; font-weight: 400; }
+    .wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 22px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--violeta);
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 24px; border-radius: 999px; font-size: 15px; font-weight: 600;
+      background: var(--violeta); color: #fff; border: none; cursor: pointer;
+      transition: transform .15s ease, background .15s ease, box-shadow .2s ease;
+      box-shadow: 0 10px 26px -10px rgba(109, 40, 217, 0.6);
+    }
+    .btn:hover { transform: translateY(-2px); background: var(--violeta-press); }
+    .btn.ghost {
+      background: transparent; color: var(--ink); border: 1.5px solid var(--line); box-shadow: none;
+    }
+    .btn.ghost:hover { border-color: var(--violeta); color: var(--violeta); background: var(--blanco); }
+    .btn.sm { padding: 10px 18px; font-size: 14px; }
+
+    /* ---------- Nav ---------- */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-in { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .logo { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 20px; letter-spacing: -0.03em; }
+    .logo .iso {
+      width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--violeta), var(--violeta-2)); color: #fff; font-size: 17px;
+      box-shadow: 0 6px 16px -6px rgba(109, 40, 217, 0.7);
+    }
+    .logo sup { font-size: 10px; color: var(--ink-3); font-weight: 600; }
+    .nav-links { display: flex; align-items: center; gap: 30px; }
+    .nav-links a.link { font-size: 14.5px; font-weight: 500; color: var(--ink-2); transition: color .15s ease; }
+    .nav-links a.link:hover { color: var(--ink); }
+    .nav-cta { display: flex; align-items: center; gap: 12px; }
+    .burger { display: none; }
+
+    /* ---------- Hero ---------- */
+    .hero { position: relative; padding: 62px 0 40px; overflow: hidden; }
+    .hero::before {
+      content: ""; position: absolute; inset: 0; z-index: -1;
+      background:
+        radial-gradient(60% 50% at 78% 8%, rgba(139, 92, 246, 0.16), transparent 60%),
+        radial-gradient(50% 45% at 8% 30%, rgba(109, 40, 217, 0.10), transparent 55%);
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; }
+    .hero h1 {
+      font-size: clamp(38px, 6vw, 62px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 800;
+      margin-top: 18px;
+    }
+    .hero h1 .serif { font-size: 1.06em; color: var(--violeta); letter-spacing: 0; }
+    .hero p.sub { margin-top: 22px; font-size: 18px; color: var(--ink-2); max-width: 30ch; line-height: 1.55; }
+    .hero-cta { margin-top: 30px; display: flex; gap: 13px; flex-wrap: wrap; }
+    .hero-trust { margin-top: 26px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-3); }
+    .hero-trust b { color: var(--ink-2); font-weight: 600; }
+
+    /* Phone mockup */
+    .phone-wrap { display: grid; place-items: center; position: relative; }
+    .blob {
+      position: absolute; width: 340px; height: 340px; border-radius: 50%;
+      background: linear-gradient(150deg, var(--violeta), var(--violeta-2)); filter: blur(6px); opacity: 0.16;
+    }
+    .phone {
+      position: relative; width: 268px; height: 552px; border-radius: 42px;
+      background: #0f0d15; padding: 11px; box-shadow: var(--shadow); border: 1px solid #241f33;
+    }
+    .phone .screen {
+      width: 100%; height: 100%; border-radius: 32px; overflow: hidden; background: #fff;
+      display: flex; flex-direction: column;
+    }
+    .ph-top { padding: 16px 15px 8px; background: #fff; }
+    .ph-mesa { display: inline-flex; align-items: center; gap: 6px; background: var(--ink); color: #fff; font-size: 10px; font-weight: 600; padding: 5px 9px; border-radius: 999px; }
+    .ph-mesa .d { width: 5px; height: 5px; border-radius: 50%; background: #f5b13d; }
+    .ph-h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; margin-top: 12px; }
+    .ph-sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+    .ph-search { margin-top: 11px; background: var(--suave); border-radius: 999px; padding: 9px 13px; font-size: 11px; color: var(--ink-3); display: flex; align-items: center; gap: 7px; }
+    .ph-cats { display: flex; gap: 6px; padding: 11px 15px 4px; }
+    .ph-cat { font-size: 10px; font-weight: 600; padding: 6px 11px; border-radius: 999px; background: var(--suave); color: var(--ink-2); white-space: nowrap; }
+    .ph-cat.on { background: var(--ink); color: #fff; }
+    .ph-feat { margin: 8px 15px 0; height: 130px; border-radius: 16px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 12px; color: #fff;
+      background:
+        radial-gradient(120% 80% at 25% 20%, rgba(139,92,246,.5), transparent 55%),
+        linear-gradient(150deg, #7c3aed, #c084fc); }
+    .ph-feat .emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 58px; filter: drop-shadow(0 8px 16px rgba(0,0,0,.25)); }
+    .ph-feat .grad { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.55)); }
+    .ph-feat .n { position: relative; font-size: 13px; font-weight: 700; }
+    .ph-feat .pr { position: absolute; top: 11px; left: 11px; background: rgba(0,0,0,.45); backdrop-filter: blur(4px); padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .ph-list { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; padding: 12px 15px; }
+    .ph-dish { border: 1px solid var(--line); border-radius: 14px; padding: 8px; }
+    .ph-dish .t { height: 52px; border-radius: 9px; background: radial-gradient(circle at 50% 40%, #f3ecff, var(--suave)); display: grid; place-items: center; font-size: 26px; }
+    .ph-dish .nm { font-size: 10px; font-weight: 600; margin-top: 6px; line-height: 1.2; }
+    .ph-dish .pp { font-size: 11px; font-weight: 700; color: var(--ink); margin-top: 3px; }
+
+    /* ---------- Marcas / franja ---------- */
+    .strip { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--suave); padding: 20px 0; }
+    .strip-in { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; color: var(--ink-3); font-size: 13px; font-weight: 500; }
+    .strip-in .it { display: inline-flex; align-items: center; gap: 8px; }
+    .strip-in .it .ti { font-size: 18px; color: var(--violeta); }
+
+    /* ---------- Secciones ---------- */
+    section.blk { padding: 78px 0; }
+    .sec-head { max-width: 640px; margin: 0 auto 46px; text-align: center; }
+    .sec-head h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.03em; font-weight: 800; margin-top: 12px; line-height: 1.08; }
+    .sec-head h2 .serif { color: var(--violeta); font-size: 1.08em; }
+    .sec-head p { margin-top: 14px; font-size: 16.5px; color: var(--ink-2); }
+
+    /* Cómo funciona */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .step { background: var(--blanco); border: 1px solid var(--line); border-radius: var(--r); padding: 26px 24px; position: relative; transition: transform .2s ease, box-shadow .2s ease; }
+    .step:hover { transform: translateY(-4px); box-shadow: var(--shadow-sm); }
+    .step .num { font-family: "Instrument Serif", serif; font-style: italic; font-size: 40px; color: var(--violeta); line-height: 1; }
+    .step .ico { position: absolute; top: 26px; right: 24px; width: 42px; height: 42px; border-radius: 12px; background: var(--violeta-soft); color: var(--violeta); display: grid; place-items: center; font-size: 21px; }
+    .step h3 { font-size: 18px; font-weight: 700; margin-top: 16px; letter-spacing: -0.01em; }
+    .step p { font-size: 14.5px; color: var(--ink-2); margin-top: 8px; line-height: 1.55; }
+
+    /* Beneficios */
+    .bene-wrap { background: var(--suave); }
+    .benes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .bene { display: flex; gap: 16px; background: var(--blanco); border: 1px solid var(--line); border-radius: var(--r); padding: 22px 24px; }
+    .bene .ico { flex: 0 0 46px; height: 46px; border-radius: 13px; background: linear-gradient(135deg, var(--violeta), var(--violeta-2)); color: #fff; display: grid; place-items: center; font-size: 22px; }
+    .bene h3 { font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; }
+    .bene p { font-size: 14px; color: var(--ink-2); margin-top: 5px; line-height: 1.5; }
+
+    /* Planes */
+    .plans { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; max-width: 800px; margin: 0 auto; }
+    .plan { border: 1.5px solid var(--line); border-radius: var(--r-lg); padding: 32px 30px; background: var(--blanco); position: relative; }
+    .plan.pro { border-color: var(--violeta); box-shadow: var(--shadow); }
+    .plan .tag { position: absolute; top: -13px; left: 30px; background: var(--violeta); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 13px; border-radius: 999px; }
+    .plan h3 { font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+    .plan .price { margin-top: 12px; font-size: 44px; font-weight: 800; letter-spacing: -0.03em; }
+    .plan .price span { font-size: 16px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
+    .plan ul { list-style: none; margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
+    .plan li { display: flex; gap: 10px; font-size: 14.5px; color: var(--ink); align-items: flex-start; }
+    .plan li .ti { color: var(--violeta); font-size: 18px; flex: 0 0 auto; margin-top: 1px; }
+    .plan li.off { color: var(--ink-3); }
+    .plan li.off .ti { color: var(--ink-3); }
+    .plan .btn { width: 100%; justify-content: center; margin-top: 26px; }
+    .plan.basic .btn { background: var(--ink); box-shadow: none; }
+    .plan-note { text-align: center; margin-top: 22px; font-size: 13px; color: var(--ink-3); }
+
+    /* Demo */
+    .demo-wrap { background: var(--ink); color: #fff; }
+    .demo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 30px; }
+    .demo h2 { font-size: clamp(26px, 3.6vw, 36px); letter-spacing: -0.03em; font-weight: 800; line-height: 1.1; }
+    .demo h2 .serif { color: var(--violeta-2); }
+    .demo p { margin-top: 12px; color: rgba(255,255,255,0.65); font-size: 16px; max-width: 44ch; }
+    .demo .qr { width: 132px; height: 132px; border-radius: 18px; background: #fff; display: grid; place-items: center; padding: 12px; }
+    .demo .qr img { width: 100%; height: 100%; }
+
+    /* Acceso */
+    .access { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 780px; margin: 0 auto; }
+    .acc-card { border: 1px solid var(--line); border-radius: var(--r); padding: 30px 28px; text-align: center; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .acc-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--violeta); }
+    .acc-card .ico { width: 56px; height: 56px; border-radius: 16px; margin: 0 auto; background: var(--violeta-soft); color: var(--violeta); display: grid; place-items: center; font-size: 28px; }
+    .acc-card h3 { font-size: 19px; font-weight: 700; margin-top: 16px; letter-spacing: -0.01em; }
+    .acc-card p { font-size: 14px; color: var(--ink-2); margin-top: 7px; line-height: 1.5; }
+    .acc-card .btn { margin-top: 18px; }
+
+    /* Contacto / CTA final */
+    .final { text-align: center; }
+    .final h2 { font-size: clamp(30px, 5vw, 50px); letter-spacing: -0.035em; font-weight: 800; line-height: 1.05; }
+    .final h2 .serif { color: var(--violeta); }
+    .final p { margin-top: 16px; font-size: 17px; color: var(--ink-2); }
+    .final .hero-cta { justify-content: center; margin-top: 30px; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--line); padding: 40px 0 46px; background: var(--suave); }
+    .foot { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .foot .logo { font-size: 17px; }
+    .foot-links { display: flex; gap: 22px; font-size: 13.5px; color: var(--ink-2); flex-wrap: wrap; }
+    .foot-links a:hover { color: var(--violeta); }
+    .foot-copy { width: 100%; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+    /* Reveal al hacer scroll */
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 20px; }
+      .hero { padding: 40px 0 20px; text-align: center; }
+      .hero p.sub { margin-left: auto; margin-right: auto; }
+      .hero-cta, .hero-trust { justify-content: center; }
+      .phone-wrap { margin-top: 24px; }
+      .steps { grid-template-columns: 1fr; }
+      .benes { grid-template-columns: 1fr; }
+      .demo { grid-template-columns: 1fr; text-align: center; }
+      .demo .qr { margin: 0 auto; }
+      .nav-links .link { display: none; }
+    }
+    @media (max-width: 620px) {
+      .plans { grid-template-columns: 1fr; }
+      .access { grid-template-columns: 1fr; }
+      .nav-cta .btn.ghost { display: none; }
+      section.blk { padding: 56px 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="wrap nav-in">
+      <a class="logo" href="#top"><span class="iso">◱</span>WOY<sup>®</sup></a>
+      <div class="nav-links">
+        <a class="link" href="#como">Cómo funciona</a>
+        <a class="link" href="#beneficios">Beneficios</a>
+        <a class="link" href="#planes">Planes</a>
+        <a class="link" href="#demo">Demo</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn ghost sm" href="#acceso"><i class="ti ti-login-2"></i>Iniciar sesión</a>
+        <a class="btn sm" href="#planes">Empezar</a>
+      </div>
+    </div>
+  </nav>
+
+  <span id="top"></span>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow"><i class="ti ti-qrcode"></i>Menús digitales con QR</span>
+        <h1>Tu carta, <span class="serif">viva</span> en cada mesa.</h1>
+        <p class="sub">El comensal escanea, ve tu menú con fotos y precios al día, y tú lo editas desde tu teléfono. Sin apps, sin reimprimir.</p>
+        <div class="hero-cta">
+          <a class="btn" href="#planes"><i class="ti ti-rocket"></i>Empezar ahora</a>
+          <a class="btn ghost" href="#demo"><i class="ti ti-eye"></i>Ver un menú real</a>
+        </div>
+        <div class="hero-trust"><i class="ti ti-map-pin" style="color:var(--violeta)"></i><b>Hecho en Panamá</b> · Español e inglés · Listo en minutos</div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="blob"></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="ph-top">
+              <span class="ph-mesa"><span class="d"></span>Mesa 04</span>
+              <div class="ph-h1">¿Qué se te antoja?</div>
+              <div class="ph-sub">Explora el menú y arma tu selección</div>
+              <div class="ph-search"><i class="ti ti-search"></i>Buscar platos, bebidas…</div>
+            </div>
+            <div class="ph-cats">
+              <span class="ph-cat on">Todos</span>
+              <span class="ph-cat">Entradas</span>
+              <span class="ph-cat">Fuertes</span>
+            </div>
+            <div class="ph-feat">
+              <span class="emoji">🍕</span><span class="grad"></span>
+              <span class="pr">$12.50</span>
+              <span class="n">Margherita clásica</span>
+            </div>
+            <div class="ph-list">
+              <div class="ph-dish"><div class="t">🥗</div><div class="nm">Ensalada del huerto</div><div class="pp">$8.90</div></div>
+              <div class="ph-dish"><div class="t">🍔</div><div class="nm">Burger de la casa</div><div class="pp">$11.00</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- STRIP -->
+  <div class="strip">
+    <div class="wrap strip-in">
+      <span class="it"><i class="ti ti-device-mobile"></i>Sin descargar nada</span>
+      <span class="it"><i class="ti ti-refresh"></i>Cambios al instante</span>
+      <span class="it"><i class="ti ti-chart-bar"></i>Reportes de visitas</span>
+      <span class="it"><i class="ti ti-message-heart"></i>Opiniones de clientes</span>
+      <span class="it"><i class="ti ti-nfc"></i>QR y NFC por mesa</span>
+    </div>
+  </div>
+
+  <!-- CÓMO FUNCIONA -->
+  <section class="blk" id="como">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Cómo funciona</span>
+        <h2>Tres pasos y <span class="serif">listo</span>.</h2>
+        <p>Sin instalar nada. Ni tú ni tus comensales.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="num">01</div><span class="ico"><i class="ti ti-qrcode"></i></span>
+          <h3>Ponemos el QR en la mesa</h3>
+          <p>Generamos un código único por mesa. Lo imprimes o lo grabas en un chip NFC para que solo lo toquen.</p>
+        </div>
+        <div class="step reveal">
+          <div class="num">02</div><span class="ico"><i class="ti ti-tools-kitchen-2"></i></span>
+          <h3>El comensal explora</h3>
+          <p>Ve tu menú con fotos, precios, tamaños y extras — en su propio teléfono, en español o inglés.</p>
+        </div>
+        <div class="step reveal">
+          <div class="num">03</div><span class="ico"><i class="ti ti-pencil"></i></span>
+          <h3>Tú lo cambias cuando quieras</h3>
+          <p>Subió el tomate, se acabó un plato, nueva promo: lo editas desde tu panel y se ve al instante en todas las mesas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFICIOS -->
+  <div class="bene-wrap">
+    <section class="blk" id="beneficios">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow">Por qué WOY</span>
+          <h2>Un menú que <span class="serif">trabaja</span> para ti.</h2>
+        </div>
+        <div class="benes">
+          <div class="bene reveal">
+            <div class="ico"><i class="ti ti-cash-off"></i></div>
+            <div><h3>Deja de reimprimir</h3><p>Cambia precios y platos las veces que quieras. Cero gasto de imprenta, cero cartas manchadas.</p></div>
+          </div>
+          <div class="bene reveal">
+            <div class="ico"><i class="ti ti-camera"></i></div>
+            <div><h3>Vende con la vista</h3><p>Fotos grandes, destacados y etiquetas. El plato entra por los ojos antes que por el mesero.</p></div>
+          </div>
+          <div class="bene reveal">
+            <div class="ico"><i class="ti ti-chart-line"></i></div>
+            <div><h3>Sabes qué pasa</h3><p>Cuántas personas abrieron tu menú cada día de la semana, y qué opinaron de su visita.</p></div>
+          </div>
+          <div class="bene reveal">
+            <div class="ico"><i class="ti ti-language"></i></div>
+            <div><h3>Español e inglés</h3><p>Tu carta se traduce sola para el turista. Un toque cambia todo el menú de idioma.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- PLANES -->
+  <section class="blk" id="planes">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Planes</span>
+        <h2>Precio <span class="serif">claro</span>, sin sorpresas.</h2>
+        <p>Un solo pago al mes. Cancela cuando quieras.</p>
+      </div>
+      <div class="plans">
+        <div class="plan basic reveal">
+          <h3>Básico</h3>
+          <div class="price">$15<span>/mes</span></div>
+          <ul>
+            <li><i class="ti ti-check"></i>Menú digital con QR por mesa</li>
+            <li><i class="ti ti-check"></i>Platos, categorías y fotos ilimitadas</li>
+            <li><i class="ti ti-check"></i>Español e inglés</li>
+            <li><i class="ti ti-check"></i>Edición desde tu teléfono</li>
+            <li class="off"><i class="ti ti-minus"></i>Reportes de visitas</li>
+            <li class="off"><i class="ti ti-minus"></i>Opiniones de clientes</li>
+          </ul>
+          <a class="btn" href="#acceso">Elegir Básico</a>
+        </div>
+        <div class="plan pro reveal">
+          <span class="tag">Recomendado</span>
+          <h3>Pro</h3>
+          <div class="price">$30<span>/mes</span></div>
+          <ul>
+            <li><i class="ti ti-check"></i>Todo lo del plan Básico</li>
+            <li><i class="ti ti-check"></i>Reportes de accesos semanales</li>
+            <li><i class="ti ti-check"></i>Opiniones y reseñas de clientes</li>
+            <li><i class="ti ti-check"></i>Promociones y pop-ups</li>
+            <li><i class="ti ti-check"></i>QR + NFC por mesa</li>
+            <li><i class="ti ti-check"></i>Soporte prioritario</li>
+          </ul>
+          <a class="btn" href="#acceso">Elegir Pro</a>
+        </div>
+      </div>
+      <p class="plan-note">¿Tienes varios locales o algo especial? <a href="#contacto" style="color:var(--violeta);font-weight:600">Hablemos</a>.</p>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <div class="demo-wrap">
+    <section class="blk" id="demo">
+      <div class="wrap demo reveal">
+        <div>
+          <span class="eyebrow" style="color:var(--violeta-2)">Demo en vivo</span>
+          <h2>Míralo con un menú <span class="serif">real</span>.</h2>
+          <p>Escanea el código o toca el botón para abrir el menú de un restaurante de verdad, tal como lo vería tu comensal.</p>
+          <div class="hero-cta">
+            <a class="btn" href="index.html" target="_blank" rel="noopener"><i class="ti ti-external-link"></i>Abrir el menú demo</a>
+          </div>
+        </div>
+        <div class="qr" id="demoQr" title="Escanéame"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ACCESO -->
+  <section class="blk" id="acceso">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Iniciar sesión</span>
+        <h2>Entra a tu <span class="serif">panel</span>.</h2>
+        <p>¿Ya eres cliente de WOY? Entra según quién seas.</p>
+      </div>
+      <div class="access">
+        <div class="acc-card reveal">
+          <div class="ico"><i class="ti ti-building-store"></i></div>
+          <h3>Soy un restaurante</h3>
+          <p>Administra tu menú, tus mesas, tus promos y tus reportes. Entra con el correo con el que te dieron acceso.</p>
+          <a class="btn" href="admin.html"><i class="ti ti-login-2"></i>Entrar a mi panel</a>
+        </div>
+        <div class="acc-card reveal">
+          <div class="ico"><i class="ti ti-crown"></i></div>
+          <h3>Soy WOY</h3>
+          <p>Panel de control de la plataforma: clientes, cobros, invitaciones y tareas.</p>
+          <a class="btn ghost" href="owner.html"><i class="ti ti-login-2"></i>Panel WOY</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL / CONTACTO -->
+  <section class="blk final" id="contacto">
+    <div class="wrap reveal">
+      <span class="eyebrow">Contacto</span>
+      <h2>Dale a tu carta la cara <span class="serif">que merece</span>.</h2>
+      <p>Escríbenos y montamos tu menú digital esta misma semana.</p>
+      <div class="hero-cta">
+        <a class="btn" href="https://wa.me/50700000000?text=Hola%20WOY%2C%20quiero%20un%20men%C3%BA%20digital%20para%20mi%20restaurante" target="_blank" rel="noopener"><i class="ti ti-brand-whatsapp"></i>Escríbenos por WhatsApp</a>
+        <a class="btn ghost" href="mailto:hola@woyprojects.tech"><i class="ti ti-mail"></i>hola@woyprojects.tech</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap">
+      <div class="foot">
+        <a class="logo" href="#top"><span class="iso">◱</span>WOY<sup>®</sup> Projects</a>
+        <div class="foot-links">
+          <a href="#como">Cómo funciona</a>
+          <a href="#planes">Planes</a>
+          <a href="#demo">Demo</a>
+          <a href="#acceso">Iniciar sesión</a>
+          <a href="terminos.html">Términos</a>
+          <a href="privacidad.html">Privacidad</a>
+        </div>
+      </div>
+      <div class="foot-copy">
+        <span>© 2026 WOY Projects · Panamá 🇵🇦</span>
+        <span>Menús digitales con QR para restaurantes.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/qrcode.min.js?v=1"></script>
+  <script>
+    // Revelado suave al hacer scroll
+    (function () {
+      var els = document.querySelectorAll(".reveal");
+      if (!("IntersectionObserver" in window)) { els.forEach(function (e) { e.classList.add("in"); }); return; }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+      }, { threshold: 0.12 });
+      els.forEach(function (e) { io.observe(e); });
+    })();
+
+    // QR de la demo, apuntando al menú real de este mismo sitio
+    (function () {
+      try {
+        var url = location.href.replace(/[^/]*$/, "") + "index.html";
+        new QRCode(document.getElementById("demoQr"), { text: url, width: 108, height: 108, correctLevel: QRCode.CorrectLevel.M });
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

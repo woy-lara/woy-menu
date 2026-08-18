@@ -1453,3 +1453,8 @@ html.font-serif .hello h1 {
 .op-gracias span { font-size: 46px; display: block; }
 .op-gracias b { display: block; margin-top: 12px; font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
 .op-gracias p { margin-top: 5px; color: var(--ink-2); font-size: 14px; }
+
+/* Enlaces legales en el pie de la pestaña Info */
+.foot-legal { font-size: 12px; }
+.foot-legal a { color: var(--ink-3); text-decoration: underline; text-underline-offset: 2px; }
+.foot-legal a:hover { color: var(--accent); }

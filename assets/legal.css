@@ -1,0 +1,72 @@
+/* WOY — estilo compartido de las páginas legales (términos, privacidad) */
+:root {
+  --violeta: #6D28D9;
+  --violeta-soft: #efe9fd;
+  --ink: #17141D;
+  --ink-2: #6F6A7A;
+  --ink-3: #A29DAF;
+  --line: #E8E5EF;
+  --suave: #F7F5FA;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  font-family: "Archivo", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  color: var(--ink); background: #fff; line-height: 1.6; -webkit-font-smoothing: antialiased;
+}
+a { color: var(--violeta); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.serif { font-family: "Instrument Serif", Georgia, serif; font-style: italic; font-weight: 400; }
+
+.top {
+  border-bottom: 1px solid var(--line); position: sticky; top: 0;
+  background: rgba(255,255,255,.85); backdrop-filter: blur(12px); z-index: 10;
+}
+.top-in { max-width: 780px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -0.03em; }
+.logo .iso { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--violeta), #8b5cf6); color: #fff; font-size: 15px; }
+.top a.back { font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+
+.doc { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+.doc h1 { font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.03em; font-weight: 800; line-height: 1.08; }
+.doc h1 .serif { color: var(--violeta); }
+.updated { margin-top: 12px; color: var(--ink-3); font-size: 14px; }
+
+.aviso {
+  margin: 24px 0 8px; padding: 16px 18px; border-radius: 14px;
+  background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12; font-size: 14px; line-height: 1.5;
+}
+.aviso b { font-weight: 700; }
+
+.doc h2 {
+  font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin: 38px 0 10px;
+  padding-top: 8px;
+}
+.doc h2 .n { color: var(--violeta); font-family: "Instrument Serif", serif; font-style: italic; margin-right: 8px; }
+.doc h3 { font-size: 16px; font-weight: 700; margin: 22px 0 6px; }
+.doc p { margin: 10px 0; color: var(--ink); }
+.doc ul { margin: 10px 0 10px 4px; padding-left: 22px; }
+.doc li { margin: 7px 0; }
+.doc strong { font-weight: 700; }
+.muted { color: var(--ink-2); }
+
+.tabla { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14.5px; }
+.tabla th, .tabla td { text-align: left; padding: 11px 13px; border: 1px solid var(--line); vertical-align: top; }
+.tabla th { background: var(--suave); font-weight: 600; }
+
+.toc { background: var(--suave); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin: 26px 0; }
+.toc b { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); }
+.toc ol { margin: 10px 0 0 18px; }
+.toc li { margin: 5px 0; }
+
+footer.doc-foot { border-top: 1px solid var(--line); background: var(--suave); }
+.doc-foot-in { max-width: 780px; margin: 0 auto; padding: 30px 24px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-3); }
+.doc-foot-in a { color: var(--ink-2); font-weight: 500; }
+
+@media (max-width: 560px) {
+  .tabla, .tabla thead, .tabla tbody, .tabla tr, .tabla th, .tabla td { display: block; }
+  .tabla th { border-bottom: none; }
+  .tabla td { border-top: none; }
+  .tabla tr { margin-bottom: 12px; }
+}

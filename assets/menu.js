@@ -38,7 +38,7 @@
       noTable: "Sin mesa",
       infoTitle: "Información", reservations: "Reservas",
       services: "Servicios especiales", follow: "Síguenos",
-      developedBy: "Desarrollado por", promoCta: "Ver menú",
+      developedBy: "Desarrollado por", promoCta: "Ver menú", privacy: "Privacidad", terms: "Términos",
       reviewTitle: "¿Te gustó tu visita?", reviewCta: "Déjanos tu reseña en Google",
       opinaTitle: "¿Cómo estuvo todo?", opinaCta: "Cuéntanos en 10 segundos",
       opinaLead: "Tu opinión llega directo al restaurante. Es anónima y opcional.",
@@ -67,7 +67,7 @@
       noTable: "No table",
       infoTitle: "Info", reservations: "Reservations",
       services: "Special services", follow: "Follow us",
-      developedBy: "Developed by", promoCta: "See menu",
+      developedBy: "Developed by", promoCta: "See menu", privacy: "Privacy", terms: "Terms",
       reviewTitle: "Enjoyed your visit?", reviewCta: "Leave us a Google review",
       opinaTitle: "How was everything?", opinaCta: "Tell us in 10 seconds",
       opinaLead: "Your feedback goes straight to the restaurant. Anonymous and optional.",
@@ -656,7 +656,8 @@
       '<div class="info-brand"><span>' + esc(data.brand.logoEmoji || "🍽️") + "</span>" +
       "<div><b>" + esc(data.brand.name || "") + "</b><small>" + esc(data.brand.tagline || "") + "</small></div></div>" +
       rows + opinar + review +
-      '<div class="foot" style="padding:18px 0 26px">' + t("developedBy") + " <b>WOY Projects</b></div>";
+      '<div class="foot" style="padding:18px 0 8px">' + t("developedBy") + " <b>WOY Projects</b></div>" +
+      '<div class="foot foot-legal" style="padding:0 0 26px"><a href="privacidad.html">' + t("privacy") + '</a> · <a href="terminos.html">' + t("terms") + "</a></div>";
 
     var ob = $("opinaBtn");
     if (ob) ob.addEventListener("click", abrirOpinion);

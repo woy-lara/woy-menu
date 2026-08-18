@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#6D28D9" />
+  <title>WOY — Política de Privacidad</title>
+  <meta name="description" content="Cómo WOY Projects trata los datos de los restaurantes y de los comensales que usan el menú digital." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="assets/legal.css?v=1" />
+</head>
+<body>
+  <header class="top">
+    <div class="top-in">
+      <a class="logo" href="landing.html"><span class="iso">◱</span>WOY<sup style="font-size:9px;color:var(--ink-3)">®</sup></a>
+      <a class="back" href="landing.html"><i class="ti ti-arrow-left"></i>Volver</a>
+    </div>
+  </header>
+
+  <main class="doc">
+    <h1>Política de <span class="serif">Privacidad</span></h1>
+    <p class="updated">Última actualización: 15 de agosto de 2026 · Aplica a WOY Projects (Panamá).</p>
+
+    <div class="aviso">
+      <b>Nota:</b> este documento explica de forma honesta cómo tratamos los datos hoy.
+      Es un borrador operativo y <b>aún no ha sido revisado por un abogado</b>; antes de
+      una operación a gran escala, conviene que un profesional lo valide.
+    </div>
+
+    <div class="toc">
+      <b>Contenido</b>
+      <ol>
+        <li><a href="#quienes">Quiénes somos</a></li>
+        <li><a href="#que">Qué datos tratamos</a></li>
+        <li><a href="#comensal">Si eres comensal</a></li>
+        <li><a href="#restaurante">Si eres restaurante</a></li>
+        <li><a href="#donde">Dónde se guardan</a></li>
+        <li><a href="#terceros">Con quién los compartimos</a></li>
+        <li><a href="#derechos">Tus derechos</a></li>
+        <li><a href="#tiempo">Cuánto los guardamos</a></li>
+        <li><a href="#cambios">Cambios y contacto</a></li>
+      </ol>
+    </div>
+
+    <h2 id="quienes"><span class="n">1</span>Quiénes somos</h2>
+    <p>WOY Projects (“WOY”, “nosotros”) es un servicio panameño que convierte la carta de un
+    restaurante en un <strong>menú digital con código QR</strong>. Este documento explica qué
+    información tratamos, con qué fin y qué control tienes sobre ella.</p>
+
+    <h2 id="que"><span class="n">2</span>Qué datos tratamos</h2>
+    <p>Tratamos la mínima información necesaria para que el menú funcione. No vendemos datos a
+    nadie ni mostramos publicidad de terceros.</p>
+    <table class="tabla">
+      <tr><th>Dato</th><th>Para qué</th><th>De quién</th></tr>
+      <tr><td>Contenido del menú (platos, precios, fotos, marca)</td><td>Mostrar la carta a los comensales</td><td>Restaurante</td></tr>
+      <tr><td>Correo y contraseña de acceso</td><td>Entrar al panel del restaurante</td><td>Restaurante</td></tr>
+      <tr><td>Conteo de aperturas del menú (fecha, mesa)</td><td>Reportes de visitas — <strong>anónimo</strong></td><td>Comensal</td></tr>
+      <tr><td>Comentarios y calificación</td><td>Que el restaurante mejore — <strong>anónimo y opcional</strong></td><td>Comensal</td></tr>
+    </table>
+
+    <h2 id="comensal"><span class="n">3</span>Si eres comensal (escaneas el QR)</h2>
+    <p>No necesitas cuenta ni das tu nombre. <strong>No sabemos quién eres.</strong></p>
+    <ul>
+      <li>Cuando abres un menú, se cuenta una <strong>visita anónima</strong> (fecha y número de
+      mesa) para que el restaurante sepa cuánta gente lo consultó. No guardamos tu identidad,
+      tu ubicación exacta, ni un perfil tuyo.</li>
+      <li>Si dejas un <strong>comentario</strong>, es voluntario y anónimo. Escríbelo pensando en
+      que lo leerá el restaurante; no incluyas datos personales tuyos ni de terceros.</li>
+      <li>Tu <strong>selección/carrito</strong> vive solo en tu propio teléfono (almacenamiento del
+      navegador) y no se envía a ningún lado.</li>
+    </ul>
+
+    <h2 id="restaurante"><span class="n">4</span>Si eres restaurante (tienes panel)</h2>
+    <ul>
+      <li>Guardamos tu <strong>correo</strong> para tu acceso y el <strong>contenido de tu menú</strong>.
+      Tú eliges tu contraseña; nosotros no la vemos (la maneja de forma cifrada nuestro proveedor
+      de autenticación).</li>
+      <li>Ves los reportes y comentarios <strong>solo de tu restaurante</strong>. Ningún otro
+      restaurante puede ver tus datos, y tú no ves los de otros.</li>
+      <li>Eres responsable de que el contenido que subes (fotos, textos, precios) sea tuyo o tengas
+      permiso para usarlo.</li>
+    </ul>
+
+    <h2 id="donde"><span class="n">5</span>Dónde se guardan</h2>
+    <p>Los datos del menú, los accesos, las visitas y los comentarios se guardan en una base de
+    datos gestionada (<strong>Supabase</strong>, sobre infraestructura en la nube). El acceso está
+    protegido por reglas que aíslan a cada restaurante. La conexión viaja cifrada (HTTPS).</p>
+    <p class="muted">En la versión inicial, parte del contenido puede vivir también en el
+    almacenamiento del propio navegador del restaurante como respaldo local.</p>
+
+    <h2 id="terceros"><span class="n">6</span>Con quién los compartimos</h2>
+    <p>No vendemos ni cedemos datos con fines de marketing. Solo intervienen proveedores necesarios
+    para operar:</p>
+    <ul>
+      <li><strong>Proveedor de base de datos y autenticación</strong> (Supabase) — almacena el menú y
+      valida los accesos.</li>
+      <li><strong>Hospedaje del sitio</strong> — sirve las páginas.</li>
+      <li>Si algún día se habilitan <strong>pagos</strong>, el cobro lo procesará una pasarela
+      certificada y los datos de tarjeta nunca pasarán por WOY. <span class="muted">(Hoy no se
+      procesan pagos en línea.)</span></li>
+    </ul>
+
+    <h2 id="derechos"><span class="n">7</span>Tus derechos</h2>
+    <ul>
+      <li><strong>Restaurante:</strong> puedes acceder, corregir o exportar tu menú desde tu panel,
+      y pedir la <strong>eliminación</strong> de tu cuenta y tus datos escribiéndonos.</li>
+      <li><strong>Comensal:</strong> como los datos de visita y comentarios son anónimos, no se
+      pueden ligar a ti para “borrar lo tuyo”; si crees que un comentario tuyo contiene datos
+      personales, escríbenos y lo retiramos.</li>
+      <li>Puedes contactarnos para cualquier duda sobre tus datos en el correo de abajo.</li>
+    </ul>
+
+    <h2 id="tiempo"><span class="n">8</span>Cuánto los guardamos</h2>
+    <p>Conservamos el menú y la cuenta mientras el restaurante sea cliente. Las visitas y
+    comentarios se conservan para los reportes; si el restaurante cierra su cuenta, sus datos
+    asociados se eliminan en un plazo razonable.</p>
+
+    <h2 id="cambios"><span class="n">9</span>Cambios y contacto</h2>
+    <p>Si cambiamos esta política, actualizaremos la fecha de arriba. Para cualquier consulta sobre
+    privacidad, escríbenos a <a href="mailto:hola@woyprojects.tech">hola@woyprojects.tech</a>.</p>
+  </main>
+
+  <footer class="doc-foot">
+    <div class="doc-foot-in">
+      <span>© 2026 WOY Projects · Panamá 🇵🇦</span>
+      <span><a href="terminos.html">Términos</a> · <a href="landing.html">Inicio</a></span>
+    </div>
+  </footer>
+</body>
+</html>
