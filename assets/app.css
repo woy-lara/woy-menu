@@ -1458,3 +1458,43 @@ html.font-serif .hello h1 {
 .foot-legal { font-size: 12px; }
 .foot-legal a { color: var(--ink-3); text-decoration: underline; text-underline-offset: 2px; }
 .foot-legal a:hover { color: var(--accent); }
+
+/* ---------- Skeleton de carga del menú ---------- */
+.menu-loading {
+  position: absolute; inset: 0; z-index: 40;
+  background: var(--bg); padding: 18px 20px;
+  display: flex; flex-direction: column;
+  animation: mlFade .2s ease both;
+}
+.menu-loading.ml-out { animation: mlOut .34s ease both; }
+@keyframes mlFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mlOut { to { opacity: 0; visibility: hidden; } }
+.menu-loading .ml-head { display: flex; align-items: center; gap: 12px; }
+.menu-loading .ml-mark {
+  width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+  font-size: 22px; background: var(--surface-2);
+  animation: mlPulse 1.3s ease-in-out infinite;
+}
+.menu-loading .ml-titles { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.ml-t, .ml-line, .ml-feat, .ml-thumb {
+  border-radius: 8px;
+  background: linear-gradient(100deg, var(--surface-2) 30%, #efe9f3 50%, var(--surface-2) 70%);
+  background-size: 220% 100%;
+  animation: mlShimmer 1.25s linear infinite;
+}
+.menu-loading .ml-t { height: 15px; width: 62%; }
+.menu-loading .ml-t.sm { height: 11px; width: 40%; }
+.menu-loading .ml-feat { height: 150px; margin-top: 20px; border-radius: 22px; }
+.menu-loading .ml-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+.menu-loading .ml-card {
+  border: 1px solid var(--line); border-radius: 22px; padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.menu-loading .ml-thumb { aspect-ratio: 1.12 / 1; border-radius: 16px; }
+.menu-loading .ml-line { height: 12px; width: 90%; }
+.menu-loading .ml-line.short { height: 12px; width: 55%; }
+@keyframes mlShimmer { from { background-position: 200% 0; } to { background-position: -20% 0; } }
+@keyframes mlPulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) {
+  .ml-t, .ml-line, .ml-feat, .ml-thumb, .menu-loading .ml-mark { animation: none; }
+}

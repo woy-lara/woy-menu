@@ -744,6 +744,35 @@
     }).catch(function () { return false; });
   }
 
+  /* Skeleton de carga: cubre el menú mientras llegan los datos de la nube,
+     para que el comensal no vea una pantalla vacía ni un parpadeo. Se dibuja
+     con la marca y se quita con un desvanecido suave. */
+  function mostrarCargando(on) {
+    var ov = $("menuLoading");
+    if (on) {
+      if (!ov) {
+        ov = document.createElement("div");
+        ov.id = "menuLoading";
+        ov.className = "menu-loading";
+        var cards = "";
+        for (var i = 0; i < 6; i++) {
+          cards += '<div class="ml-card"><div class="ml-thumb"></div>' +
+            '<div class="ml-line"></div><div class="ml-line short"></div></div>';
+        }
+        ov.innerHTML =
+          '<div class="ml-head"><span class="ml-mark">' + esc(data.brand.logoEmoji || "\uD83C\uDF7D\uFE0F") + "</span>" +
+          '<div class="ml-titles"><span class="ml-t"></span><span class="ml-t sm"></span></div></div>' +
+          '<div class="ml-feat"></div>' +
+          '<div class="ml-grid">' + cards + "</div>";
+        (document.getElementById("app") || document.body).appendChild(ov);
+      }
+      ov.hidden = false;
+    } else if (ov) {
+      ov.classList.add("ml-out");
+      setTimeout(function () { if (ov.parentNode) ov.parentNode.removeChild(ov); }, 340);
+    }
+  }
+
   function init() {
     applyBrand();
     state.mesa = readMesa();
@@ -751,23 +780,33 @@
       $("mesa").classList.remove("is-none");
       $("mesaLabel").textContent = state.mesa.label;
     }
-    renderPromo();
-    maybeShowPromoPopup();
-    renderCats();
-    renderFeatured();
-    renderList();
     updateBadges();
 
-    // Si el restaurante ya vive en la nube, repintamos con lo publicado.
-    sincronizarConNube().then(function (hayNube) {
-      if (!hayNube) return;
+    // ¿Vamos a esperar datos de la nube? Solo si hay restaurante en la URL y la
+    // nube responde. En ese caso mostramos el skeleton en vez del menú vacío.
+    function pintarTodo() {
+      mostrarCargando(false);
       applyBrand();
       applyStatic();
       renderPromo();
       renderCats();
       renderFeatured();
       renderList();
-    });
+      maybeShowPromoPopup();
+    }
+
+    var esperandoNube = !!(window.WOY.tenantId() && window.WOYCloud && WOYCloud.activo());
+    if (esperandoNube) {
+      // Mostramos el skeleton hasta que la nube responda. NO lo abandonamos: si
+      // tarda mucho, una red de seguridad pinta lo que haya para no dejar al
+      // usuario colgado, y cuando la nube por fin responde se repinta con ella.
+      mostrarCargando(true);
+      var red = setTimeout(pintarTodo, 9000);
+      sincronizarConNube().then(function () { clearTimeout(red); pintarTodo(); });
+    } else {
+      // Restaurante por defecto (local): se pinta al instante, sin espera.
+      pintarTodo();
+    }
 
     $("q").addEventListener("input", function (e) {
       state.q = e.target.value;
