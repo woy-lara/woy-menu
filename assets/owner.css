@@ -644,6 +644,10 @@ body.owner .al-hd .ti { color: var(--accent); }
 @media (max-width: 560px) {
   .client-grid { grid-template-columns: 1fr; }
 
+  /* Barra superior: menos padding para que el botón de acción no desborde */
+  .o-top { padding-left: 16px; padding-right: 16px; gap: 8px; }
+  .o-top .pill-btn { padding-left: 13px; padding-right: 13px; }
+
   .wtable thead { display: none; }
   .wtable, .wtable tbody, .wtable tr, .wtable td { display: block; width: 100%; }
   .wtable tr {

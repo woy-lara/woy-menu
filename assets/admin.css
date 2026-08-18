@@ -482,6 +482,10 @@ body.admin {
 }
 .rep input {
   padding: 9px 12px;
+  min-width: 0; /* permite que el input se encoja en pantallas angostas */
+}
+.rep > input:first-child {
+  flex: 1 1 auto; /* el campo de texto ocupa el espacio y cede al angostar */
 }
 .rep .rep-x {
   flex: 0 0 auto;
