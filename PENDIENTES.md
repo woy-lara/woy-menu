@@ -54,9 +54,8 @@ incluido el aislamiento entre restaurantes.
 - ⬜ **Dominio propio** (ej. `menu.woyprojects.com`). Hoy `woy-lara.github.io`
   comparte origen con otros repos de esa cuenta.
 - 🔒 **Fotos reales de los platos** — la mayor palanca de apetito. Tú las provees.
-- ⬜ **Landing page del negocio** — ya está el PDF con la estructura.
-- ⬜ **Términos y privacidad** — ahora sí obligatorio: ya se recogen comentarios
-  y estadísticas de visitas.
+- ✅ **Landing page del negocio** — HECHA y viva: `landing.html` (marca WOY violeta, hero con mockup, planes, demo con QR, acceso). Falta enlazarla al dominio propio.
+- ✅ **Términos y privacidad** — HECHOS y vivos: `terminos.html` + `privacidad.html`, enlazados desde la web y el pie del menú. Falta la revisión de un abogado.
 - ✅ **Recuperación de contraseña** — vino con el login real.
 
 ## P4 · Pulido
