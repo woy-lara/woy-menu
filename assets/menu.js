@@ -786,6 +786,13 @@
     // nube responde. En ese caso mostramos el skeleton en vez del menú vacío.
     function pintarTodo() {
       mostrarCargando(false);
+      // Recalcular la mesa contra las mesas ya cargadas (la nube puede traer
+      // un nombre configurado, p. ej. "Terraza 5", que el respaldo local no tenía).
+      state.mesa = readMesa();
+      if (state.mesa) {
+        $("mesa").classList.remove("is-none");
+        $("mesaLabel").textContent = state.mesa.label;
+      }
       applyBrand();
       applyStatic();
       renderPromo();

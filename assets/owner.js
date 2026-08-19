@@ -187,7 +187,9 @@
 
   /* ---------- Navegación (lateral) ---------- */
   var TAB_TITLES = { dashboard: "Panel", clientes: "Clientes", cobros: "Cobros", solicitudes: "Solicitudes", tareas: "Tareas" };
+  var currentTab = "dashboard";
   function showTab(name) {
+    currentTab = name;
     $("ownerNav").querySelectorAll("button").forEach(function (b) {
       b.classList.toggle("is-active", b.getAttribute("data-tab") === name);
     });
@@ -196,11 +198,21 @@
     });
     if ($("oTitle")) $("oTitle").textContent = TAB_TITLES[name] || "Panel";
     closeSide();
-    if (name === "dashboard") renderDashboard();
-    if (name === "clientes") renderClients();
-    if (name === "cobros") renderCobros();
-    if (name === "solicitudes") renderRequests();
-    if (name === "tareas") renderTasks();
+    refreshActive();
+  }
+
+  /* Repinta la pestaña que el usuario TIENE a la vista. Se llama tras cada
+     guardado, para que un pago/solicitud/cliente/tarea no se vea "congelado"
+     cuando se creó desde una pestaña distinta a la suya (p. ej. registrar un
+     pago desde Clientes o el Panel, no solo desde Cobros). */
+  function refreshActive() {
+    ({
+      dashboard: renderDashboard,
+      clientes: renderClients,
+      cobros: renderCobros,
+      solicitudes: renderRequests,
+      tareas: renderTasks
+    }[currentTab] || function () {})();
   }
   function openSide() { $("oSide").classList.add("open"); $("oScrim").classList.add("show"); }
   function closeSide() { $("oSide").classList.remove("open"); $("oScrim").classList.remove("show"); }
@@ -608,7 +620,7 @@
       }
       window.WOY.saveClients(listB);
       closeClient();
-      renderClients();
+      refreshActive();
       toast(creating ? "Cliente “" + name + "” creado" : "Cliente actualizado", "ti-check");
     }
     if (pass) sha256(pass).then(persist); else persist(null);
@@ -728,7 +740,7 @@
     if (!confirm("¿Eliminar a “" + c.name + "”? Se borrará su menú, sus cobros y su enlace dejará de funcionar.")) return;
     window.WOY.saveClients(list.filter(function (x) { return x !== c; }));
     try { localStorage.removeItem(window.WOY.keyFor(c.slug)); } catch (e) {}
-    renderClients();
+    refreshActive();
     toast("Cliente eliminado", "ti-trash");
   }
 
@@ -816,7 +828,7 @@
     closePay();
     toast("Pago registrado · " + inv, "ti-check");
     showReceipt(payingSlug, rec.id);
-    renderCobros();
+    refreshActive();
   }
 
   /* ---------- Recibo / factura ---------- */
@@ -946,7 +958,7 @@
     if (!r) return;
     r.status = r.status === "pendiente" ? "proceso" : "entregado";
     window.WOY.saveClients(list);
-    renderRequests();
+    refreshActive();
     toast(r.status === "entregado" ? "Solicitud entregada ✓" : "Movida a En proceso", "ti-check");
   }
 
@@ -994,7 +1006,7 @@
     }
     window.WOY.saveClients(list);
     closeReq();
-    renderRequests();
+    refreshActive();
     toast(reqEditing ? "Solicitud actualizada" : "Solicitud creada", "ti-check");
   }
   function deleteReq() {
@@ -1005,7 +1017,7 @@
     if (c) c.requests = (c.requests || []).filter(function (x) { return x.id !== reqEditing.id; });
     window.WOY.saveClients(list);
     closeReq();
-    renderRequests();
+    refreshActive();
     toast("Solicitud eliminada", "ti-trash");
   }
 
@@ -1098,7 +1110,7 @@
     var list = loadTasks(), t = list.filter(function (x) { return x.id === id; })[0];
     if (!t) return;
     t.status = t.status === "hecho" ? "pendiente" : "hecho";
-    saveTasks(list); renderTasks();
+    saveTasks(list); refreshActive(); updateTaskCount();
     toast(t.status === "hecho" ? "Tarea completada ✓" : "Tarea reabierta", "ti-check");
   }
   function fillTaskClients(sel) {
@@ -1145,14 +1157,14 @@
     };
     if (tkEditing) { var t = list.filter(function (x) { return x.id === tkEditing; })[0]; if (t) Object.assign(t, payload); }
     else { list.push(Object.assign({ id: window.WOY.uid("tk"), createdAt: todayISO() }, payload)); }
-    saveTasks(list); closeTask(); renderTasks();
+    saveTasks(list); closeTask(); refreshActive(); updateTaskCount();
     toast(tkEditing ? "Tarea actualizada" : "Tarea creada", "ti-check");
   }
   function deleteTask() {
     if (!tkEditing) return;
     if (!confirm("¿Eliminar esta tarea?")) return;
     saveTasks(loadTasks().filter(function (x) { return x.id !== tkEditing; }));
-    closeTask(); renderTasks(); toast("Tarea eliminada", "ti-trash");
+    closeTask(); refreshActive(); updateTaskCount(); toast("Tarea eliminada", "ti-trash");
   }
 
   // Calendario del Panel (mes con días de tareas coloreados)

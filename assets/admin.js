@@ -317,12 +317,17 @@
   function fillDishFilter() {
     var sel = $("dishFilter");
     if (!sel) return;
-    var cur = sel.value || "all";
+    // Si el filtro activo apunta a una categoría que ya no existe (p. ej. se
+    // acaba de borrar), lo reseteamos a "Todas" — si no, el desplegable diría
+    // "Todas" pero el grid seguiría filtrado por la categoría fantasma.
+    if (!(data.categories || []).some(function (c) { return c.id === dishFilterCat; })) {
+      dishFilterCat = "all";
+    }
     sel.innerHTML = '<option value="all">Todas las categorías</option>' +
       (data.categories || []).map(function (c) {
         return '<option value="' + c.id + '">' + esc(c.emoji ? c.emoji + " " : "") + esc(c.name) + "</option>";
       }).join("");
-    sel.value = data.categories.some(function (c) { return c.id === cur; }) ? cur : "all";
+    sel.value = dishFilterCat;
   }
   function renderDishes() {
     var host = $("dishGrid");
@@ -1051,6 +1056,20 @@
       });
     }
 
+    // Los listeners se registran SIEMPRE, antes del posible atajo de sesión.
+    // Si no, cuando la sesión no administra este restaurante (o venció) se
+    // mostraría el formulario sin handlers y "Entrar" no haría nada.
+    $("lockBtn").addEventListener("click", enviar);
+    $("lockEmail").addEventListener("keydown", function (e) { if (e.key === "Enter") $("lockPass").focus(); });
+    $("lockPass").addEventListener("keydown", function (e) { if (e.key === "Enter") enviar(); });
+    $("lockForgot").addEventListener("click", function () {
+      var email = ($("lockEmail").value || "").trim();
+      if (!email) { fallo("Escribe tu correo primero."); return; }
+      WOYCloud.recuperar(email, location.href)
+        .then(function () { nota("Si ese correo tiene cuenta, te llegará un enlace para cambiar la contraseña."); })
+        .catch(function (e) { fallo(e.message); });
+    });
+
     // Si ya venía con sesión abierta, no molestamos con el formulario.
     if (WOYCloud.haySesion() && !creando) {
       entrarYa().then(function (ok) { if (!ok) pintar(); }).catch(pintar);
@@ -1123,17 +1142,6 @@
           .catch(function (e) { ocupado(false); fallo(e.message); });
       }
     }
-
-    $("lockBtn").addEventListener("click", enviar);
-    $("lockEmail").addEventListener("keydown", function (e) { if (e.key === "Enter") $("lockPass").focus(); });
-    $("lockPass").addEventListener("keydown", function (e) { if (e.key === "Enter") enviar(); });
-    $("lockForgot").addEventListener("click", function () {
-      var email = ($("lockEmail").value || "").trim();
-      if (!email) { fallo("Escribe tu correo primero."); return; }
-      WOYCloud.recuperar(email, location.href)
-        .then(function () { nota("Si ese correo tiene cuenta, te llegará un enlace para cambiar la contraseña."); })
-        .catch(function (e) { fallo(e.message); });
-    });
   }
 
   /* Trae el menú del restaurante desde la nube. Si allá todavía no hay nada

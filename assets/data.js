@@ -807,6 +807,15 @@
     return (typeof v === "string" ? v : "").toLowerCase().replace(/[^a-z0-9-]/g, "");
   }
 
+  /* Imagen segura: una imagen embebida (data:image/...) — que es lo que produce
+     la compresión del admin — o un enlace http(s). Cualquier otra cosa (p. ej.
+     un data:text/html malicioso) se descarta. NO se recorta el contenido. */
+  function safeImg(v) {
+    var s = typeof v === "string" ? v : "";
+    if (/^data:image\/[a-z0-9.+-]+;base64,/i.test(s)) return s;
+    return safeUrl(s);
+  }
+
   /* ---- Helpers de UI compartidos (antes duplicados en los 3 archivos) ---- */
 
   /* Escapa texto para inyectarlo seguro en HTML (atributos con comillas
@@ -920,7 +929,9 @@
         descEn: String(d.descEn || "").slice(0, 800),
         price: safeNum(d.price),
         emoji: String(d.emoji || "").slice(0, 8),
-        img: String(d.img || "").slice(0, 8),
+        // La foto es un dataURL (o URL http). NO se recorta: truncarla rompía
+        // la imagen. Solo se acepta si es una imagen embebida o un enlace seguro.
+        img: safeImg(d.img),
         kcal: safeNum(d.kcal), protein: safeNum(d.protein),
         carbs: safeNum(d.carbs), fat: safeNum(d.fat),
         timeMin: safeNum(d.timeMin), rating: safeNum(d.rating),
@@ -928,9 +939,11 @@
         featured: !!d.featured,
         tags: Array.isArray(d.tags) ? d.tags.map(safeId).filter(Boolean) : [],
         ingredients: Array.isArray(d.ingredients) ? d.ingredients : [],
+        // Los tamaños usan {label, labelEn} en todo el resto del app (seed,
+        // admin y menú); usar {name} aquí dejaba los botones de opción en blanco.
         sizes: Array.isArray(d.sizes) ? d.sizes.map(function (s) {
           s = s || {};
-          return { name: String(s.name || "").slice(0, 60), nameEn: String(s.nameEn || "").slice(0, 60), delta: safeNum(s.delta) };
+          return { label: String(s.label || s.name || "").slice(0, 60), labelEn: String(s.labelEn || s.nameEn || "").slice(0, 60), delta: safeNum(s.delta) };
         }) : [],
         mods: Array.isArray(d.mods) ? d.mods.map(function (m) {
           m = m || {};
